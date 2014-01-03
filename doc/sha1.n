@@ -1,0 +1,65 @@
+'\"
+.so man.macros
+.TH sha1 n 4.1 "Tcl-Extensions"
+.HS sha1 tcl
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+sha1 \- manipulate sha1 message digests
+.SH SYNOPSIS
+\fBpackage require sample\fR ?\fB0.5\fR?
+.sp
+\fBsha1\fR ?\fB\-log2base \fIlog2base\fR? \fB\-string \fIstring\fR
+.br
+or
+.br
+\fBsha1\fR ?\fB\-log2base \fIlog2base\fR? ?\fB\-copychan \fIcopyChanID\fR? \fB\-chan \fIchanID\fR
+.br
+or
+.br
+\fBsha1 \-init\fR (returns descriptor)
+.br
+\fBsha1 \-update \fIdescriptor\fR ?\fB\-maxbytes \fIn\fR? ?\fB\-copychan \fIchanID\fR? \fB\-chan \fIchanID\fR
+.br
+\fBsha1\fR ?\fB\-log2base \fIlog2base\fR? \fB\-final \fIdescriptor\fR
+.BE
+.SH DESCRIPTION
+.PP
+SHA1 is NIST's Secure Hashing Algorithm (also known as Secure Hashing
+Standard) with the minor modification that they proposed on 7/11/94.
+.PP
+Switches can be in any order.
+.PP
+Returns a sha1 digest in base 2 ** log2base ascii representation.
+log2base defaults to 4, i.e., hex representation.
+.PP
+.nf
+       \fBlog2base   length    chars\fR
+         1          160      01            \fI(binary)\fR
+         2           80      0..3
+         3           54      0...7         \fI(octal)\fR
+         4           40      0..9a..f      \fI(hex)\fR
+         5           32      0..9a..v
+         6           27      0..9a..zA..Z_,
+.fi
+.PP
+(The characters in the digest string have been chosen to be usable in
+filenames so that the sha1 command can be used, for example, to digest URLs
+into shorter strings for filenames in a cache.)
+.PP
+In the \fB\-string\fR version, returns sha1 digest alone of \fIstring\fR.
+.PP
+In the \fB\-chan\fR version, returns list of 2 items: length of data in
+\fIchanID\fR followed by sha1 digest of all data in \fIchanID\fR.
+\fIChanID\fR is identifier returned from "\fBopen\fR" for example.  If
+\fB\-copychan\fR is supplied, will also copy all data from \fIchanID\fR to
+\fIcopychanID\fR.
+.PP
+In the third form, \fB\-init\fR returns a descriptor, \fB\-update\fR can be
+called any number of times with that descriptor and returns the number of
+bytes read, and \fB\-final\fR returns the result in the same form as the
+standalone \fB\-chan\fR.
+'\" Local Variables:
+'\" mode: nroff
+'\" fill-column: 78
+'\" End:

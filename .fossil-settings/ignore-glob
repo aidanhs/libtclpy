@@ -1,0 +1,17 @@
+*.a
+*.dll
+*.dylib
+*.exe
+*.exp
+*.lib
+*.o
+*.obj
+*.res
+*.sl
+*.so
+Makefile
+config.cache
+config.log
+config.status
+pkgIndex.tcl
+*/versions.vc
