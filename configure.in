@@ -71,11 +71,11 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 
-TEA_ADD_SOURCES([sample.c tclsample.c])
+TEA_ADD_SOURCES([sample.c])
 TEA_ADD_HEADERS([])
-TEA_ADD_INCLUDES([])
-TEA_ADD_LIBS([])
-TEA_ADD_CFLAGS([])
+TEA_ADD_INCLUDES([$(python-config --includes)])
+TEA_ADD_LIBS([$(python-config --libs)])
+TEA_ADD_CFLAGS([$(python-config --cflags) $(python-config --ldflags)])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([])
 
