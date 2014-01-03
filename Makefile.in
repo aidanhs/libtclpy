@@ -181,7 +181,7 @@ COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(C
 # for the BINARIES that you specified above have already been done.
 #========================================================================
 
-all: binaries libraries doc
+all: binaries libraries
 
 #========================================================================
 # The binaries target builds executable programs, Windows .dll's, unix
@@ -194,19 +194,7 @@ binaries: $(BINARIES)
 
 libraries:
 
-#========================================================================
-# Your doc target should differentiate from doc builds (by the developer)
-# and doc installs (see install-doc), which just install the docs on the
-# end user machine when building from source.
-#========================================================================
-
-doc:
-	@echo "If you have documentation to create, place the commands to"
-	@echo "build the docs in the 'doc:' target.  For example:"
-	@echo "        xml2nroff sample.xml > sample.n"
-	@echo "        xml2html sample.xml > sample.html"
-
-install: all install-binaries install-libraries install-doc
+install: all install-binaries install-libraries
 
 install-binaries: binaries install-lib-binaries install-bin-binaries
 
@@ -222,19 +210,6 @@ install-libraries: libraries
 	    echo "Installing $(srcdir)/$$i" ; \
 	    $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir) ; \
 	done;
-
-#========================================================================
-# Install documentation.  Unix manpages should go in the $(mandir)
-# directory.
-#========================================================================
-
-install-doc: doc
-	@$(INSTALL_DATA_DIR) $(DESTDIR)$(mandir)/mann
-	@echo "Installing documentation in $(DESTDIR)$(mandir)"
-	@list='$(srcdir)/doc/*.n'; for i in $$list; do \
-	    echo "Installing $$i"; \
-	    $(INSTALL_DATA) $$i $(DESTDIR)$(mandir)/mann ; \
-	done
 
 test: binaries libraries
 	$(TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS) \
@@ -332,7 +307,7 @@ dist: dist-clean
 	chmod 664 $(DIST_DIR)/tclconfig/tcl.m4
 	chmod +x $(DIST_DIR)/tclconfig/install-sh
 
-	list='demos doc generic library mac tests unix win'; \
+	list='demos generic library mac tests unix win'; \
 	for p in $$list; do \
 	    if test -d $(srcdir)/$$p ; then \
 		$(INSTALL_DATA_DIR) $(DIST_DIR)/$$p; \
@@ -442,7 +417,7 @@ uninstall-binaries:
 	  rm -f $(DESTDIR)$(bindir)/$$p; \
 	done
 
-.PHONY: all binaries clean depend distclean doc install libraries test
+.PHONY: all binaries clean depend distclean install libraries test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -209,7 +209,6 @@ PRJSTUBLIB	= $(OUT_DIR)\$(PRJSTUBLIBNAME)
 PRJ_INSTALL_DIR         = $(_INSTALLDIR)\$(PROJECT)$(DOTVERSION)
 LIB_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
 BIN_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
-DOC_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
 SCRIPT_INSTALL_DIR	= $(PRJ_INSTALL_DIR)
 INCLUDE_INSTALL_DIR	= $(_TCLDIR)\include
 
@@ -217,7 +216,6 @@ INCLUDE_INSTALL_DIR	= $(_TCLDIR)\include
 GENERICDIR	= $(ROOT)\generic
 WINDIR		= $(ROOT)\win
 LIBDIR          = $(ROOT)\library
-DOCDIR		= $(ROOT)\doc
 TOOLSDIR	= $(ROOT)\tools
 COMPATDIR	= $(ROOT)\compat
 
@@ -340,7 +338,7 @@ TESTFLAGS = $(TESTFLAGS) -file $(TESTPAT)
 
 all:	    setup $(PROJECT)
 $(PROJECT): setup pkgIndex $(PRJLIB)
-install:    install-binaries install-libraries install-docs
+install:    install-binaries install-libraries
 pkgIndex:   $(OUT_DIR)\pkgIndex.tcl
 
 test: setup $(PROJECT)
@@ -447,7 +445,7 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 # Installation. (EDIT)
 #
 # You may need to modify this section to reflect the final distribution
-# of your files and possibly to generate documentation.
+# of your files.
 #
 #---------------------------------------------------------------------
 
@@ -461,10 +459,6 @@ install-libraries: $(OUT_DIR)\pkgIndex.tcl
 	@if exist $(LIBDIR) $(CPY) $(LIBDIR)\*.tcl "$(SCRIPT_INSTALL_DIR)"
 	@echo Installing package index in '$(SCRIPT_INSTALL_DIR)'
 	@$(CPY) $(OUT_DIR)\pkgIndex.tcl $(SCRIPT_INSTALL_DIR)
-
-install-docs:
-	@echo Installing documentation files to '$(DOC_INSTALL_DIR)'
-	@if exist $(DOCDIR) $(CPY) $(DOCDIR)\*.n "$(DOC_INSTALL_DIR)"
 
 #---------------------------------------------------------------------
 # Clean up
