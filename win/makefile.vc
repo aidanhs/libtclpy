@@ -161,7 +161,7 @@ Please `cd` to its location first.
 #
 #-------------------------------------------------------------------------
 
-PROJECT = sample
+PROJECT = tclpy
 
 # Uncomment the following line if this is a Tk extension.
 #PROJECT_REQUIRES_TK=1
@@ -175,7 +175,7 @@ PROJECT = sample
 !endif
 # get project version from row "AC_INIT([project], [????])"
 !if [echo DOTVERSION = \>> versions.vc] \
-   && [nmakehlp -V ..\configure.in sample >> versions.vc]
+   && [nmakehlp -V ..\configure.in tclpy >> versions.vc]
 !endif
 !include "versions.vc"
 
@@ -183,10 +183,9 @@ VERSION         = $(DOTVERSION:.=)
 STUBPREFIX      = $(PROJECT)stub
 
 DLLOBJS = \
-	$(TMP_DIR)\tclsample.obj \
-	$(TMP_DIR)\sample.obj \
+	$(TMP_DIR)\tclpy.obj \
 !if !$(STATIC_BUILD)
-	$(TMP_DIR)\sample.res
+	$(TMP_DIR)\tclpy.res
 !endif
 
 PRJHEADERS =
@@ -438,8 +437,8 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 @PACKAGE_NAME@       $(PROJECT)
 @PKG_LIB_FILE@       $(PRJLIBNAME)
 <<
-	@echo package ifneeded sample $(DOTVERSION) \
-	    [list load [file join $$dir $(PRJLIBNAME)] Sample] >> $@
+	@echo package ifneeded tclpy $(DOTVERSION) \
+	    [list load [file join $$dir $(PRJLIBNAME)] Tclpy] >> $@
 
 #---------------------------------------------------------------------
 # Installation. (EDIT)
