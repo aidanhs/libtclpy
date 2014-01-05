@@ -59,3 +59,13 @@ the TEA configure.in and Makefile.in files. Instructions for using the
 VC++ makefile are written in the first part of the Makefile.vc
 file.
 
+TODO
+----
+
+1. `py import ?-from module? module : -> nil`
+2. `py call func ?arg ...? : ?str ...? -> str` (str args, str return)
+3. `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
+4. `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
+   (polymorphic args, polymorphic return)
+5. allow statically compiling python into tclpy
+6. allow statically compiling tclpy
