@@ -1,0 +1,42 @@
+if {[lsearch [namespace children] ::tcltest] == -1} {
+	package require tcltest
+	namespace import ::tcltest::*
+}
+
+package require tclpy
+
+# =========
+# PY
+# =========
+test py-1.1 {incorrect usage} {
+	list [catch {py} errMsg] $errMsg
+} {1 {wrong # args: should be "py subcommand ?argument ...?"}}
+
+# =========
+# PY EVAL
+# =========
+test py_eval-1.1 {incorrect usage} {
+	list [catch {py eval} errMsg1] $errMsg1\
+	     [catch {py eval {print 1} {print 2}} errMsg2] $errMsg2
+} {1 {wrong # args: should be "py eval evalString"}\
+   1 {wrong # args: should be "py eval evalString"}}
+
+test py_eval-1.2 {Eval returns nothing} {
+	list [py eval {1+1}]
+} {{}}
+
+test py_eval-1.2 {Basic eval usage} -setup {
+	set randdir tmp_[expr {rand()}]
+} -body {
+	py eval "import os; os.mkdir('$randdir')"
+	file isdirectory $randdir
+} -result {1} -cleanup {
+	file delete $randdir
+}
+
+# =========
+# cleanup
+# =========
+::tcltest::cleanupTests
+return
+
