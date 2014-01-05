@@ -10,7 +10,7 @@ package require tclpy
 # =========
 test py-1.1 {incorrect usage} {
 	list [catch {py} errMsg] $errMsg
-} {1 {wrong # args: should be "py subcommand ?argument ...?"}}
+} {1 {wrong # args: should be "py subcommand ?arg ...?"}}
 
 # =========
 # PY EVAL

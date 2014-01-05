@@ -41,7 +41,7 @@ Py_Cmd(
 	)
 {
 	if (objc < 2) {
-		Tcl_WrongNumArgs(interp, 1, objv, "subcommand ?argument ...?");
+		Tcl_WrongNumArgs(interp, 1, objv, "subcommand ?arg ...?");
 		return TCL_ERROR;
 	}
 
