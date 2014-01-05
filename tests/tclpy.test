@@ -28,7 +28,8 @@ test py_eval-1.2 {Eval returns nothing} {
 test py_eval-1.2 {Basic eval usage} -setup {
 	set randdir tmp_[expr {rand()}]
 } -body {
-	py eval "import os; os.mkdir('$randdir')"
+	py eval "def mk(dir): os.mkdir(dir)"
+	py eval "import os; mk('$randdir')"
 	file isdirectory $randdir
 } -result {1} -cleanup {
 	file delete $randdir
