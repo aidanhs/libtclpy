@@ -68,4 +68,10 @@ TODO
 4. `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
    (polymorphic args, polymorphic return)
 5. allow statically compiling python into tclpy
+   - http://pkaudio.blogspot.co.uk/2008/11/notes-for-embedding-python-in-your-cc.html
+   - https://github.com/albertz/python-embedded
+   - https://github.com/zeha/python-superstatic
+   - http://www.velocityreviews.com/forums/t741756-embedded-python-static-modules.html
+   - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
+   - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
 6. allow statically compiling tclpy
