@@ -15,17 +15,17 @@ test py-1.1 {incorrect usage} {
 # =========
 # PY EVAL
 # =========
-test py_eval-1.1 {incorrect usage} {
+test py_eval-1.1 {incorrect eval usage} {
 	list [catch {py eval} errMsg1] $errMsg1\
 	     [catch {py eval {print 1} {print 2}} errMsg2] $errMsg2
 } {1 {wrong # args: should be "py eval evalString"}\
    1 {wrong # args: should be "py eval evalString"}}
 
-test py_eval-1.2 {Eval returns nothing} {
+test py_eval-1.2 {eval returns nothing} {
 	list [py eval {1+1}]
 } {{}}
 
-test py_eval-1.2 {Basic eval usage} -setup {
+test py_eval-1.2 {basic eval} -setup {
 	set randdir tmp_[expr {rand()}]
 } -body {
 	py eval "def mk(dir): os.mkdir(dir)"
