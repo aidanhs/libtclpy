@@ -62,16 +62,18 @@ file.
 TODO
 ----
 
-1. `py import ?-from module? module : -> nil`
-2. `py call func ?arg ...? : ?str ...? -> str` (str args, str return)
-3. `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
-4. `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
-   (polymorphic args, polymorphic return)
-5. allow statically compiling python into tclpy
+In order of priority:
+
+ - `py import ?-from module? module : -> nil`
+ - `py call func ?arg ...? : ?str ...? -> str` (str args, str return)
+ - `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
+ - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
+ - (polymorphic args, polymorphic return)
+ - allow statically compiling python into tclpy
    - http://pkaudio.blogspot.co.uk/2008/11/notes-for-embedding-python-in-your-cc.html
    - https://github.com/albertz/python-embedded
    - https://github.com/zeha/python-superstatic
    - http://www.velocityreviews.com/forums/t741756-embedded-python-static-modules.html
    - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
-6. allow statically compiling tclpy
+ - allow statically compiling tclpy
