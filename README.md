@@ -89,4 +89,5 @@ In order of priority:
    - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
  - allow statically compiling tclpy
+ - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
