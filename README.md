@@ -19,11 +19,13 @@ Notes:
  - Don't use the eval subcommand with substituted input.
 
 	py eval evalString
+	py import module?.submodule?...??
 
 example script:
 
 	py eval {def mk(dir): os.mkdir(dir)}
-	py eval {import os; mk('testdir')}
+	py import os
+	py eval {print "creating 'testdir'"; mk('testdir')}
 
 UNIX BUILD
 ----------
@@ -64,7 +66,6 @@ TODO
 
 In order of priority:
 
- - `py import ?-from module? module : -> nil`
  - `py call func ?arg ...? : ?str ...? -> str` (str args, str return)
  - `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
@@ -77,3 +78,4 @@ In order of priority:
    - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
  - allow statically compiling tclpy
+ - `py import ?-from module? module : -> nil`

@@ -36,6 +36,25 @@ test py_eval-1.2 {basic eval} -setup {
 }
 
 # =========
+# PY IMPORT
+# =========
+test py_import-1.1 {incorrect import usage} {
+	list [catch {py import} errMsg1] $errMsg1\
+	     [catch {py import -from os} errMsg2] $errMsg2
+} {1 {wrong # args: should be "py import module"}\
+   1 {wrong # args: should be "py import module"}}
+
+test py_import-1.2 {basic import} -body {
+	py import re
+	py eval "import sys; assert 're' in sys.modules; assert 're' in globals()"
+} -result {}
+
+test py_import-1.3 {submodule import} -body {
+	py import xml.dom
+	py eval "import sys; assert 'dom' in dir(xml)"
+} -result {}
+
+# =========
 # cleanup
 # =========
 ::tcltest::cleanupTests

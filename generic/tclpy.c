@@ -23,13 +23,55 @@ PyEval_Cmd(
 	};
 }
 
+static int
+PyImport_Cmd(
+	ClientData clientData,  /* Not used. */
+	Tcl_Interp *interp,     /* Current interpreter */
+	int objc,               /* Number of arguments */
+	Tcl_Obj *const objv[]   /* Argument strings */
+	)
+{
+	char *modname, *topmodname;
+	PyObject *pMainModule, *pTopModule;
+	int ret = -1;
+
+	if (objc != 3) {
+		Tcl_WrongNumArgs(interp, 2, objv, "module");
+		return TCL_ERROR;
+	}
+
+	modname = Tcl_GetString(objv[2]);
+
+	// Borrowed ref, do not decrement
+	pMainModule = PyImport_AddModule("__main__");
+	if (pMainModule == NULL)
+		return TCL_ERROR;
+
+	pTopModule = PyImport_ImportModuleEx(modname, NULL, NULL, NULL);
+	if (pTopModule == NULL)
+		return TCL_ERROR;
+
+	topmodname = PyModule_GetName(pTopModule);
+	if (topmodname != NULL) {
+		ret = PyObject_SetAttrString(pMainModule, topmodname, pTopModule);
+	}
+	Py_DECREF(pTopModule);
+
+	if (ret != -1) {
+		return TCL_OK;
+	} else {
+		return TCL_ERROR;
+	}
+}
+
+
 static const char *cmdnames[] = {
-	"eval", NULL
+	"eval", "import", NULL
 };
 static int (*cmds[]) (
 	ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]
 ) = {
-	PyEval_Cmd
+	PyEval_Cmd, PyImport_Cmd
 };
 
 static int
