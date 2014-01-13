@@ -13,13 +13,24 @@ in "LICENSE.tea".
 USAGE
 -----
 
-Notes:
- - All commands are run as if in a single interpreter session. Imports and
-   function definitions persist.
- - Don't use the eval subcommand with substituted input.
+General notes`:
+ - Unless otherwise noted, 'interpreter' refers to the python interpreter.
+ - All commands are run in the context of a single interpreter session. Imports,
+   function definitions and variables persist.
 
-	py eval evalString
-	py import module?.submodule?...??
+Reference:
+ - `py eval evalString`
+   - `takes: string of valid python code`
+   - `returns: nothing`
+   - `side effects: executes code in the python interpreter`
+   - **Do not use with substituted input**
+   - `evalString` may be any valid python code, including semicolons for single
+     line statements or (non-indented) multiline blocks
+ - `py import module`
+   - `takes: name of a python module`
+   - `returns: nothing`
+   - `side effects: imports named module into globals of the python interpreter`
+   - the name of the module may be of the form module.submodule
 
 example script:
 
