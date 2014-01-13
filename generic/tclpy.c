@@ -105,8 +105,10 @@ Tclpy_Init(Tcl_Interp *interp)
 	if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
 		return TCL_ERROR;
 
-	Tcl_CreateObjCommand(interp, "py", (Tcl_ObjCmdProc *) Py_Cmd,
-		(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+	Tcl_Command cmd = Tcl_CreateObjCommand(interp, "py",
+		(Tcl_ObjCmdProc *) Py_Cmd, (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+	if (cmd == NULL)
+		return TCL_ERROR;
 
 	Py_Initialize();
 
