@@ -2,6 +2,62 @@
 #include <tcl.h>
 
 static int
+PyCall_Cmd(
+	ClientData clientData,  /* Not used. */
+	Tcl_Interp *interp,     /* Current interpreter */
+	int objc,               /* Number of arguments */
+	Tcl_Obj *const objv[]   /* Argument strings */
+	)
+{
+	if (objc < 3) {
+		Tcl_WrongNumArgs(interp, 2, objv, "func ?arg ...?");
+		return TCL_ERROR;
+	}
+
+	const char *fn = Tcl_GetString(objv[2]);
+
+	// Borrowed ref, do not decrement
+	PyObject *pMainModule = PyImport_AddModule("__main__");
+	if (pMainModule == NULL)
+		return TCL_ERROR;
+
+	PyObject *pFn = PyObject_GetAttrString(pMainModule, fn);
+	if (pFn == NULL)
+		return TCL_ERROR;
+
+	int i;
+	PyObject *pArgs = PyTuple_New(objc-3);
+	PyObject* curarg = NULL;
+	for (i = 0; i < objc-3; i++) {
+		curarg = PyString_FromString(Tcl_GetString(objv[i+3]));
+		if (curarg == NULL) {
+			Py_DECREF(pArgs);
+			Py_DECREF(pFn);
+			return TCL_ERROR;
+		}
+		PyTuple_SET_ITEM(pArgs, i, curarg);
+	}
+
+	PyObject *pRet = PyObject_Call(pFn, pArgs, NULL);
+	Py_DECREF(pFn);
+	if (pRet == NULL)
+		return TCL_ERROR;
+
+	PyObject *pStrRet = PyObject_Str(pRet);
+	Py_DECREF(pRet);
+	if (pStrRet == NULL)
+		return TCL_ERROR;
+
+	char *ret = PyString_AS_STRING(pStrRet);
+	Py_DECREF(pStrRet);
+	if (ret == NULL)
+		return TCL_ERROR;
+
+	Tcl_SetResult(interp, ret, TCL_VOLATILE);
+	return TCL_OK;
+}
+
+static int
 PyEval_Cmd(
 	ClientData clientData,  /* Not used. */
 	Tcl_Interp *interp,     /* Current interpreter */
@@ -66,12 +122,12 @@ PyImport_Cmd(
 
 
 static const char *cmdnames[] = {
-	"eval", "import", NULL
+	"call", "eval", "import", NULL
 };
 static int (*cmds[]) (
 	ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]
 ) = {
-	PyEval_Cmd, PyImport_Cmd
+	PyCall_Cmd, PyEval_Cmd, PyImport_Cmd
 };
 
 static int

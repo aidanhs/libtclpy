@@ -19,6 +19,11 @@ General notes`:
    function definitions and variables persist.
 
 Reference:
+ - `py call func ?arg ...?
+   - `takes: name of a python function`
+   - `returns: return value of function with str() applied to it`
+   - `side effects: executes function`
+   - `func` may not be a member of a module or object - it must be a global
  - `py eval evalString`
    - `takes: string of valid python code`
    - `returns: nothing`
@@ -35,8 +40,10 @@ Reference:
 example script:
 
 	py eval {def mk(dir): os.mkdir(dir)}
+	py eval {def rm(dir): os.rmdir(dir); return 15}
 	py import os
 	py eval {print "creating 'testdir'"; mk('testdir')}
+	py call rm testdir
 
 UNIX BUILD
 ----------
@@ -77,7 +84,7 @@ TODO
 
 In order of priority:
 
- - `py call func ?arg ...? : ?str ...? -> str` (str args, str return)
+ - `py call ?mod.?func ?arg ...? : ?str ...? -> str` (str args, str return)
  - `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
  - (polymorphic args, polymorphic return)
