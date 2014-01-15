@@ -13,7 +13,7 @@ in "LICENSE.tea".
 USAGE
 -----
 
-General notes`:
+General notes:
  - Unless otherwise noted, 'interpreter' refers to the python interpreter.
  - All commands are run in the context of a single interpreter session. Imports,
    function definitions and variables persist.
@@ -37,13 +37,17 @@ Reference:
    - `side effects: imports named module into globals of the python interpreter`
    - the name of the module may be of the form module.submodule
 
-example script:
+example tclsh session:
 
-	py eval {def mk(dir): os.mkdir(dir)}
-	py eval {def rm(dir): os.rmdir(dir); return 15}
-	py import os
-	py eval {print "creating 'testdir'"; mk('testdir')}
-	py call rm testdir
+	% py eval {def mk(dir): os.mkdir(dir)}
+	% py eval {def rm(dir): os.rmdir(dir); return 15}
+	% py import os
+	% set a [py eval {print "creating 'testdir'"; mk('testdir')}]
+	creating 'testdir'
+	% set b [py call rm testdir]
+	15
+	% puts "a: $a, b: $b"
+	a: , b: 15
 
 UNIX BUILD
 ----------
@@ -85,6 +89,7 @@ TODO
 In order of priority:
 
  - `py call ?mod.?func ?arg ...? : ?str ...? -> str` (str args, str return)
+ - properly handle exceptions
  - `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
  - (polymorphic args, polymorphic return)

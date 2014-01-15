@@ -35,6 +35,7 @@ PyCall_Cmd(
 			Py_DECREF(pFn);
 			return TCL_ERROR;
 		}
+		// Steals a reference
 		PyTuple_SET_ITEM(pArgs, i, curarg);
 	}
 
@@ -120,7 +121,7 @@ PyImport_Cmd(
 	}
 }
 
-
+// The two static variables below are linked by their order, keep alphabetical
 static const char *cmdnames[] = {
 	"call", "eval", "import", NULL
 };
