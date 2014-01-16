@@ -19,7 +19,7 @@ General notes:
    function definitions and variables persist.
 
 Reference:
- - `py call func ?arg ...?
+ - `py call func ?arg ...?`
    - `takes: name of a python function`
    - `returns: return value of function with str() applied to it`
    - `side effects: executes function`
@@ -90,7 +90,7 @@ In order of priority:
 
  - `py call ?mod.?func ?arg ...? : ?str ...? -> str` (str args, str return)
  - properly handle exceptions
- - `py call func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
+ - `py call ?mod.?func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
  - (polymorphic args, polymorphic return)
  - allow statically compiling python into tclpy
