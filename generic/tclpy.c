@@ -41,6 +41,7 @@ PyCall_Cmd(
 
 	PyObject *pRet = PyObject_Call(pFn, pArgs, NULL);
 	Py_DECREF(pFn);
+	Py_DECREF(pArgs);
 	if (pRet == NULL)
 		return TCL_ERROR;
 
