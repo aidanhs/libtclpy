@@ -14,16 +14,47 @@ PyCall_Cmd(
 		return TCL_ERROR;
 	}
 
-	const char *fn = Tcl_GetString(objv[2]);
+	const char *objandfn = Tcl_GetString(objv[2]);
 
 	// Borrowed ref, do not decrement
 	PyObject *pMainModule = PyImport_AddModule("__main__");
 	if (pMainModule == NULL)
 		return TCL_ERROR;
 
-	PyObject *pFn = PyObject_GetAttrString(pMainModule, fn);
+	// So we don't have to special case the decref in the following loop
+	Py_INCREF(pMainModule);
+	PyObject *pObjParent = NULL;
+	PyObject *pObj = pMainModule;
+	PyObject *pObjStr = NULL;
+	char *dot = index(objandfn, '.');
+	while (dot != NULL) {
+		pObjParent = pObj;
+
+		pObjStr = PyString_FromStringAndSize(objandfn, dot-objandfn);
+		if (pObjStr == NULL) {
+			Py_DECREF(pObjParent);
+			return TCL_ERROR;
+		}
+
+		pObj = PyObject_GetAttr(pObjParent, pObjStr);
+		Py_DECREF(pObjStr);
+		Py_DECREF(pObjParent);
+		if (pObj == NULL)
+			return TCL_ERROR;
+
+		objandfn = dot + 1;
+		dot = index(objandfn, '.');
+	}
+
+	PyObject *pFn = PyObject_GetAttrString(pObj, objandfn);
+	Py_DECREF(pObj);
 	if (pFn == NULL)
 		return TCL_ERROR;
+
+	if (!PyCallable_Check(pFn)) {
+		Py_DECREF(pFn);
+		return TCL_ERROR;
+	}
 
 	int i;
 	PyObject *pArgs = PyTuple_New(objc-3);

@@ -19,11 +19,11 @@ General notes:
    function definitions and variables persist.
 
 Reference:
- - `py call func ?arg ...?`
+ - `py call ?obj.?func ?arg ...?`
    - `takes: name of a python function`
    - `returns: return value of function with str() applied to it`
    - `side effects: executes function`
-   - `func` may not be a member of a module or object - it must be a global
+   - `func` may be a dot qualified name (i.e. object or module method)
  - `py eval evalString`
    - `takes: string of valid python code`
    - `returns: nothing`
@@ -46,8 +46,14 @@ example tclsh session:
 	creating 'testdir'
 	% set b [py call rm testdir]
 	15
-	% puts "a: $a, b: $b"
-	a: , b: 15
+	% py import StringIO
+	% py eval {sio = StringIO.StringIO()}
+	% py call sio.write someinput
+	None
+	% set c [py call sio.getvalue]
+	someinput
+	% puts "a: $a, b: $b, c: $c"
+	a: , b: 15, c: someinput
 
 UNIX BUILD
 ----------
@@ -88,7 +94,6 @@ TODO
 
 In order of priority:
 
- - `py call ?mod.?func ?arg ...? : ?str ...? -> str` (str args, str return)
  - properly handle exceptions
  - `py call ?mod.?func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
