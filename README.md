@@ -17,6 +17,9 @@ General notes:
  - Unless otherwise noted, 'interpreter' refers to the python interpreter.
  - All commands are run in the context of a single interpreter session. Imports,
    function definitions and variables persist.
+ - Unless otherwise noted, errors in the python interpreter will become part of
+   the tcl stack trace in the form of a short description of the actual error.
+   They may be masked (as per tcl stack traces) with catch.
 
 Reference:
  - `py call ?obj.?func ?arg ...?`
@@ -31,6 +34,7 @@ Reference:
    - **Do not use with substituted input**
    - `evalString` may be any valid python code, including semicolons for single
      line statements or (non-indented) multiline blocks
+   - errors reaching the python interpreter top level are printed to stderr
  - `py import module`
    - `takes: name of a python module`
    - `returns: nothing`
@@ -52,8 +56,13 @@ example tclsh session:
 	None
 	% set c [py call sio.getvalue]
 	someinput
-	% puts "a: $a, b: $b, c: $c"
-	a: , b: 15, c: someinput
+	% py eval {divide = lambda x: 1.0/int(x)}
+	% set d [py call divide 16]
+	0.0625
+	% list [catch {py call divide 0} err] $err
+	1 {float division by zero}
+	% puts "a: $a, b: $b, c: $c, d: $d"
+	a: , b: 15, c: someinput, d: 0.0625
 
 UNIX BUILD
 ----------
@@ -94,7 +103,7 @@ TODO
 
 In order of priority:
 
- - properly handle exceptions
+ - exception full traceback support
  - `py call ?mod.?func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
    (polymorphic args, polymorphic return)
@@ -109,3 +118,5 @@ In order of priority:
  - allow statically compiling tclpy
  - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
+ - py call of non-existing function says raises attribute err, should be a
+   NameError

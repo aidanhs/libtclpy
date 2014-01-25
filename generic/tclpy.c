@@ -1,5 +1,37 @@
 #include <Python.h>
 #include <tcl.h>
+#include <assert.h>
+
+// Returns a string that must be 'free'd containing an error and traceback, or
+// NULL if there was no Python error
+static char *
+pyTraceAsStr(void)
+{
+	// Shouldn't call this function unless Python has excepted
+	if (PyErr_Occurred() == NULL)
+		return NULL;
+
+	/* pTrace unused */
+	PyObject *pType = NULL, *pVal = NULL, *pTrace = NULL;
+	PyObject *pRet = NULL;
+
+	PyErr_Fetch(&pType, &pVal, &pTrace); /* Clears exception */
+	PyErr_NormalizeException(&pType, &pVal, &pTrace);
+
+	/* Only have the type (PyErr_SetNone has possibly been called) */
+	if (pVal == NULL) {
+		pRet = pType;
+	} else {
+	/* Basic error string */
+		pRet = pVal;
+	}
+	PyObject *pRetStr = PyObject_Str(pRet);
+	if (pRetStr == NULL)
+		return strdup("[failed to get Python error value]");
+	char *retStr = strdup(PyString_AS_STRING(pRetStr));
+	Py_DECREF(pRetStr);
+	return retStr;
+}
 
 static int
 PyCall_Cmd(
@@ -181,7 +213,16 @@ Py_Cmd(
 			&cmdindex) != TCL_OK)
 		return TCL_ERROR;
 
-	return (*(cmds[cmdindex]))(clientData, interp, objc, objv);
+	/* Actually call the command */
+	int ret = (*(cmds[cmdindex]))(clientData, interp, objc, objv);
+
+	if (ret == TCL_ERROR) {
+		char *traceStr = pyTraceAsStr();
+		Tcl_AppendResult(interp, traceStr, NULL);
+		free(traceStr);
+	}
+
+	return ret;
 }
 
 int
