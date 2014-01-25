@@ -16,12 +16,12 @@ PyCall_Cmd(
 
 	const char *objandfn = Tcl_GetString(objv[2]);
 
-	// Borrowed ref, do not decrement
+	/* Borrowed ref, do not decrement */
 	PyObject *pMainModule = PyImport_AddModule("__main__");
 	if (pMainModule == NULL)
 		return TCL_ERROR;
 
-	// So we don't have to special case the decref in the following loop
+	/* So we don't have to special case the decref in the following loop */
 	Py_INCREF(pMainModule);
 	PyObject *pObjParent = NULL;
 	PyObject *pObj = pMainModule;
@@ -66,7 +66,7 @@ PyCall_Cmd(
 			Py_DECREF(pFn);
 			return TCL_ERROR;
 		}
-		// Steals a reference
+		/* Steals a reference */
 		PyTuple_SET_ITEM(pArgs, i, curarg);
 	}
 
@@ -131,7 +131,7 @@ PyImport_Cmd(
 
 	modname = Tcl_GetString(objv[2]);
 
-	// Borrowed ref, do not decrement
+	/* Borrowed ref, do not decrement */
 	pMainModule = PyImport_AddModule("__main__");
 	if (pMainModule == NULL)
 		return TCL_ERROR;
@@ -153,7 +153,7 @@ PyImport_Cmd(
 	}
 }
 
-// The two static variables below are linked by their order, keep alphabetical
+/* The two static variables below are related by order, keep alphabetical */
 static const char *cmdnames[] = {
 	"call", "eval", "import", NULL
 };
