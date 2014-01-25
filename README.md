@@ -97,7 +97,8 @@ In order of priority:
  - properly handle exceptions
  - `py call ?mod.?func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
- - (polymorphic args, polymorphic return)
+   (polymorphic args, polymorphic return)
+ - unicode handling (in exception messages, returns from calls...AS\_STRING is bad)
  - allow statically compiling python into tclpy
    - http://pkaudio.blogspot.co.uk/2008/11/notes-for-embedding-python-in-your-cc.html
    - https://github.com/albertz/python-embedded
