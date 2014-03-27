@@ -2,6 +2,10 @@
 #include <tcl.h>
 #include <assert.h>
 
+// Need an integer we can use for detecting python errors, assume we'll never
+// use TCL_BREAK
+#define PY_ERROR TCL_BREAK
+
 // Returns a string that must be 'free'd containing an error and traceback, or
 // NULL if there was no Python error
 static char *
@@ -51,7 +55,7 @@ PyCall_Cmd(
 	/* Borrowed ref, do not decrement */
 	PyObject *pMainModule = PyImport_AddModule("__main__");
 	if (pMainModule == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	/* So we don't have to special case the decref in the following loop */
 	Py_INCREF(pMainModule);
@@ -65,14 +69,14 @@ PyCall_Cmd(
 		pObjStr = PyString_FromStringAndSize(objandfn, dot-objandfn);
 		if (pObjStr == NULL) {
 			Py_DECREF(pObjParent);
-			return TCL_ERROR;
+			return PY_ERROR;
 		}
 
 		pObj = PyObject_GetAttr(pObjParent, pObjStr);
 		Py_DECREF(pObjStr);
 		Py_DECREF(pObjParent);
 		if (pObj == NULL)
-			return TCL_ERROR;
+			return PY_ERROR;
 
 		objandfn = dot + 1;
 		dot = index(objandfn, '.');
@@ -81,11 +85,11 @@ PyCall_Cmd(
 	PyObject *pFn = PyObject_GetAttrString(pObj, objandfn);
 	Py_DECREF(pObj);
 	if (pFn == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	if (!PyCallable_Check(pFn)) {
 		Py_DECREF(pFn);
-		return TCL_ERROR;
+		return PY_ERROR;
 	}
 
 	int i;
@@ -96,7 +100,7 @@ PyCall_Cmd(
 		if (curarg == NULL) {
 			Py_DECREF(pArgs);
 			Py_DECREF(pFn);
-			return TCL_ERROR;
+			return PY_ERROR;
 		}
 		/* Steals a reference */
 		PyTuple_SET_ITEM(pArgs, i, curarg);
@@ -106,17 +110,17 @@ PyCall_Cmd(
 	Py_DECREF(pFn);
 	Py_DECREF(pArgs);
 	if (pRet == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	PyObject *pStrRet = PyObject_Str(pRet);
 	Py_DECREF(pRet);
 	if (pStrRet == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	char *ret = PyString_AS_STRING(pStrRet);
 	Py_DECREF(pStrRet);
 	if (ret == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	Tcl_SetResult(interp, ret, TCL_VOLATILE);
 	return TCL_OK;
@@ -140,7 +144,7 @@ PyEval_Cmd(
 	if (PyRun_SimpleString(cmd) == 0) {
 		return TCL_OK;
 	} else {
-		return TCL_ERROR;
+		return PY_ERROR;
 	};
 }
 
@@ -166,11 +170,11 @@ PyImport_Cmd(
 	/* Borrowed ref, do not decrement */
 	pMainModule = PyImport_AddModule("__main__");
 	if (pMainModule == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	pTopModule = PyImport_ImportModuleEx(modname, NULL, NULL, NULL);
 	if (pTopModule == NULL)
-		return TCL_ERROR;
+		return PY_ERROR;
 
 	topmodname = PyModule_GetName(pTopModule);
 	if (topmodname != NULL) {
@@ -181,7 +185,7 @@ PyImport_Cmd(
 	if (ret != -1) {
 		return TCL_OK;
 	} else {
-		return TCL_ERROR;
+		return PY_ERROR;
 	}
 }
 
@@ -216,7 +220,8 @@ Py_Cmd(
 	/* Actually call the command */
 	int ret = (*(cmds[cmdindex]))(clientData, interp, objc, objv);
 
-	if (ret == TCL_ERROR) {
+	if (ret == PY_ERROR) {
+		ret = TCL_ERROR;
 		char *traceStr = pyTraceAsStr();
 		Tcl_AppendResult(interp, traceStr, NULL);
 		free(traceStr);
