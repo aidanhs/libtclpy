@@ -44,44 +44,46 @@ Reference:
 
 example tclsh session:
 
-	% load libtclpy0.1.so
-	% py eval {def mk(dir): os.mkdir(dir)}
-	% py eval {def rm(dir): os.rmdir(dir); return 15}
-	% py import os
-	% set a [py eval {print "creating 'testdir'"; mk('testdir')}]
-	creating 'testdir'
-	% set b [py call rm testdir]
-	15
-	% py import StringIO
-	% py eval {sio = StringIO.StringIO()}
-	% py call sio.write someinput
-	None
-	% set c [py call sio.getvalue]
-	someinput
-	% py eval {divide = lambda x: 1.0/int(x)}
-	% set d [py call divide 16]
-	0.0625
-	% list [catch {py call divide 0} err] $err
-	1 {ZeroDivisionError: float division by zero
-	  File "<string>", line 1, in <lambda>
-	----- tcl -> python interface -----}
-	% py import json
-	% py eval {
-	def jobj(*args):
-	    d = {}
-	    for i in range(len(args)/2):
-	        d[args[2*i]] = args[2*i+1]
-	    return json.dumps(d)
-	}
-	% set e [dict create]
-	% dict set e {t"est} "11{24"
-	t\"est 11\{24
-	% dict set e 6 5
-	t\"est 11\{24 6 5
-	% set e [py call jobj {*}$e]
-	{"t\"est": "11{24", "6": "5"}
-	% puts "a: $a, b: $b, c: $c, d: $d, e: $e"
-	a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}
+```
+% load libtclpy0.1.so
+% py eval {def mk(dir): os.mkdir(dir)}
+% py eval {def rm(dir): os.rmdir(dir); return 15}
+% py import os
+% set a [py eval {print "creating 'testdir'"; mk('testdir')}]
+creating 'testdir'
+% set b [py call rm testdir]
+15
+% py import StringIO
+% py eval {sio = StringIO.StringIO()}
+% py call sio.write someinput
+None
+% set c [py call sio.getvalue]
+someinput
+% py eval {divide = lambda x: 1.0/int(x)}
+% set d [py call divide 16]
+0.0625
+% list [catch {py call divide 0} err] $err
+1 {ZeroDivisionError: float division by zero
+  File "<string>", line 1, in <lambda>
+----- tcl -> python interface -----}
+% py import json
+% py eval {
+def jobj(*args):
+    d = {}
+    for i in range(len(args)/2):
+        d[args[2*i]] = args[2*i+1]
+    return json.dumps(d)
+}
+% set e [dict create]
+% dict set e {t"est} "11{24"
+t\"est 11\{24
+% dict set e 6 5
+t\"est 11\{24 6 5
+% set e [py call jobj {*}$e]
+{"t\"est": "11{24", "6": "5"}
+% puts "a: $a, b: $b, c: $c, d: $d, e: $e"
+a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}
+```
 
 UNIX BUILD
 ----------
