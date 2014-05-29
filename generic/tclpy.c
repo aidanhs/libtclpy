@@ -18,7 +18,6 @@ pyTraceAsStr(void)
 	if (PyErr_Occurred() == NULL)
 		return NULL;
 
-
 	/* USE PYTHON TRACEBACK MODULE */
 
 	// TODO: save the error and reraise in python if we have no idea
@@ -270,6 +269,8 @@ Py_Cmd(
 
 	if (ret == PY_ERROR) {
 		ret = TCL_ERROR;
+		// Not entirely sure if this is the correct way of doing things. Should
+		// I be calling Tcl_AddErrorInfo instead?
 		char *traceStr = pyTraceAsStr();
 		Tcl_AppendResult(interp, traceStr, NULL);
 		Tcl_AppendResult(interp, "----- tcl -> python interface -----", NULL);

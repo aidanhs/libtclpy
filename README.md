@@ -17,8 +17,9 @@ General notes:
  - Unless otherwise noted, 'interpreter' refers to the python interpreter.
  - All commands are run in the context of a single interpreter session. Imports,
    function definitions and variables persist.
- - Unless otherwise noted, errors in the python interpreter will become part of
-   the tcl stack trace in the form of a short description of the actual error.
+ - Exceptions in the python interpreter will return a stack trace of the python
+   code that was executing. If the exception continues up the stack, the tcl
+   stack trace will be appended to it.
    They may be masked (as per tcl stack traces) with catch.
 
 Reference:
@@ -43,6 +44,7 @@ Reference:
 
 example tclsh session:
 
+	% load libtclpy0.1.so
 	% py eval {def mk(dir): os.mkdir(dir)}
 	% py eval {def rm(dir): os.rmdir(dir); return 15}
 	% py import os
@@ -60,9 +62,26 @@ example tclsh session:
 	% set d [py call divide 16]
 	0.0625
 	% list [catch {py call divide 0} err] $err
-	1 {float division by zero}
-	% puts "a: $a, b: $b, c: $c, d: $d"
-	a: , b: 15, c: someinput, d: 0.0625
+	1 {ZeroDivisionError: float division by zero
+	  File "<string>", line 1, in <lambda>
+	----- tcl -> python interface -----}
+	% py import json
+	% py eval {
+	def jobj(*args):
+	    d = {}
+	    for i in range(len(args)/2):
+	        d[args[2*i]] = args[2*i+1]
+	    return json.dumps(d)
+	}
+	% set e [dict create]
+	% dict set e {t"est} "11{24"
+	t\"est 11\{24
+	% dict set e 6 5
+	t\"est 11\{24 6 5
+	% set e [py call jobj {*}$e]
+	{"t\"est": "11{24", "6": "5"}
+	% puts "a: $a, b: $b, c: $c, d: $d, e: $e"
+	a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}
 
 UNIX BUILD
 ----------
@@ -103,7 +122,6 @@ TODO
 
 In order of priority:
 
- - exception full traceback support
  - `py call ?mod.?func ?arg ...? : ?str ...? -> multi` (str arg, polymorphic return)
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
    (polymorphic args, polymorphic return)
@@ -118,5 +136,7 @@ In order of priority:
  - allow statically compiling tclpy
  - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
+ - return the short error line in the catch err variable and put the full stack
+   trace in errorInfo
  - py call of non-existing function says raises attribute err, should be a
    NameError
