@@ -6,6 +6,9 @@
 // use TCL_BREAK
 #define PY_ERROR TCL_BREAK
 
+static PyObject *pFormatException = NULL;
+static PyObject *pFormatExceptionOnly = NULL;
+
 // Returns a string that must be 'free'd containing an error and traceback, or
 // NULL if there was no Python error
 static char *
@@ -15,26 +18,71 @@ pyTraceAsStr(void)
 	if (PyErr_Occurred() == NULL)
 		return NULL;
 
-	/* pTrace unused */
+
+	/* USE PYTHON TRACEBACK MODULE */
+
+	// TODO: save the error and reraise in python if we have no idea
+	// TODO: prefix everything with 'PY:'?
+	// TODO: use extract_tb to get stack, print custom traceback myself
+
 	PyObject *pType = NULL, *pVal = NULL, *pTrace = NULL;
-	PyObject *pRet = NULL;
+	PyObject *pTraceList = NULL, *pTraceStr = NULL, *pTraceDesc = NULL;
+	PyObject *pNone = NULL, *pEmptyStr = NULL;
+	char *traceStr = NULL;
+	Py_ssize_t traceLen = 0;
 
 	PyErr_Fetch(&pType, &pVal, &pTrace); /* Clears exception */
 	PyErr_NormalizeException(&pType, &pVal, &pTrace);
 
-	/* Only have the type (PyErr_SetNone has possibly been called) */
-	if (pVal == NULL) {
-		pRet = pType;
+	/* Get traceback as a python list */
+	if (pTrace != NULL) {
+		pTraceList = PyObject_CallFunctionObjArgs(
+			pFormatException, pType, pVal, pTrace, NULL);
 	} else {
-	/* Basic error string */
-		pRet = pVal;
+		pTraceList = PyObject_CallFunctionObjArgs(
+			pFormatExceptionOnly, pType, pVal, NULL);
 	}
-	PyObject *pRetStr = PyObject_Str(pRet);
-	if (pRetStr == NULL)
-		return strdup("[failed to get Python error value]");
-	char *retStr = strdup(PyString_AS_STRING(pRetStr));
-	Py_DECREF(pRetStr);
-	return retStr;
+	if (pTraceList == NULL)
+		return strdup("[Failed to get python exception details (#e_ltp01)]\n");
+
+	/* Put the list in tcl order (top stack level at top) */
+	pNone = PyObject_CallMethod(pTraceList, "reverse", NULL);
+	if (pNone == NULL) {
+		Py_DECREF(pTraceList);
+		return strdup("[Failed to get python exception details (#e_ltp02)]\n");
+	}
+	assert(pNone == Py_None);
+	Py_DECREF(pNone);
+
+	/* Remove "Traceback (most recent call last):" if the trace len > 1 */
+	/* TODO: this feels like a hack, there must be a better way */
+	traceLen = PyObject_Length(pTraceList);
+	if (traceLen > 1) {
+		pTraceDesc = PyObject_CallMethod(pTraceList, "pop", NULL);
+	}
+	if (traceLen <= 0 || (pTraceDesc == NULL && traceLen > 1)) {
+		Py_DECREF(pTraceList);
+		return strdup("[Failed to get python exception details (#e_ltp03)]\n");
+	}
+	Py_XDECREF(pTraceDesc);
+
+	/* Turn the python list into a python string */
+	pEmptyStr = PyString_FromString("");
+	if (pEmptyStr == NULL) {
+		Py_DECREF(pTraceList);
+		return strdup("[Failed to get python exception details (#e_ltp04)]\n");
+	}
+	pTraceStr = PyObject_CallMethod(pEmptyStr, "join", "O", pTraceList);
+	Py_DECREF(pTraceList);
+	Py_DECREF(pEmptyStr);
+	if (pTraceStr == NULL)
+		return strdup("[Failed to get python exception details (#e_ltp05)]\n");
+
+	/* Turn the python string into a string */
+	traceStr = strdup(PyString_AS_STRING(pTraceStr));
+	Py_DECREF(pTraceStr);
+
+	return traceStr;
 }
 
 static int
@@ -224,7 +272,10 @@ Py_Cmd(
 		ret = TCL_ERROR;
 		char *traceStr = pyTraceAsStr();
 		Tcl_AppendResult(interp, traceStr, NULL);
+		Tcl_AppendResult(interp, "----- tcl -> python interface -----", NULL);
 		free(traceStr);
+		/* In case there was an exception in the traceback printer */
+		PyErr_Clear();
 	}
 
 	return ret;
@@ -245,7 +296,28 @@ Tclpy_Init(Tcl_Interp *interp)
 	if (cmd == NULL)
 		return TCL_ERROR;
 
-	Py_Initialize();
+	Py_Initialize(); /* void */
+
+	/* Get support for full tracebacks */
+	PyObject *pTraceModStr, *pTraceMod;
+
+	pTraceModStr = PyString_FromString("traceback");
+	if (pTraceModStr == NULL)
+		return TCL_ERROR;
+	pTraceMod = PyImport_Import(pTraceModStr);
+	Py_DECREF(pTraceModStr);
+	if (pTraceMod == NULL)
+		return TCL_ERROR;
+	pFormatException =     PyObject_GetAttrString(pTraceMod, "format_exception");
+	pFormatExceptionOnly = PyObject_GetAttrString(pTraceMod, "format_exception_only");
+	Py_DECREF(pTraceMod);
+	if (pFormatException == NULL || pFormatExceptionOnly == NULL ||
+			!PyCallable_Check(pFormatException) ||
+			!PyCallable_Check(pFormatExceptionOnly)) {
+		Py_XDECREF(pFormatException);
+		Py_XDECREF(pFormatExceptionOnly);
+		return TCL_ERROR;
+	}
 
 	return TCL_OK;
 }

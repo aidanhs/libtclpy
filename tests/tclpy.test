@@ -55,9 +55,21 @@ test py_import-1.3 {submodule import} -body {
 } -result {}
 
 test py_import-1.4 {non-existent import} -body {
-	py eval {a = lambda: 1/0}
 	list [catch {py import aosidas} err] $err
-} -result {1 {No module named aosidas}}
+} -result {1 {ImportError: No module named aosidas
+----- tcl -> python interface -----}}
+
+test py_import-1.5 {non-existent import with full trace} -body {
+	proc aaa {} {py import aosidas}
+	list [catch {aaa} err] $err $::errorInfo
+} -result {1 {ImportError: No module named aosidas
+----- tcl -> python interface -----} {ImportError: No module named aosidas
+----- tcl -> python interface -----
+    while executing
+"py import aosidas"
+    (procedure "aaa" line 1)
+    invoked from within
+"aaa"}}
 
 # =========
 # PY CALL
@@ -95,14 +107,49 @@ test py_call-1.6 {basic call with complex types} {
 test py_call-1.7 {simple call exception} {
 	py eval {a = lambda: 1/0}
 	list [catch {py call a} err] $err
-} {1 {integer division or modulo by zero}}
+} {1 {ZeroDivisionError: integer division or modulo by zero
+  File "<string>", line 1, in <lambda>
+----- tcl -> python interface -----}}
 
 test py_call-1.8 {stacked call exception} {
 	py eval {def a(): return 5 + dict()}
 	py eval {def b(): return a()}
 	py eval {def c(): return b()}
-	list [catch {py call c} err] $err
-} {1 {unsupported operand type(s) for +: 'int' and 'dict'}}
+	proc d {} {py call c}
+	proc e {} {d}
+	list [catch {e} err] $err $::errorInfo
+} {1 {TypeError: unsupported operand type(s) for +: 'int' and 'dict'
+  File "<string>", line 1, in a
+  File "<string>", line 1, in b
+  File "<string>", line 1, in c
+----- tcl -> python interface -----} {TypeError: unsupported operand type(s) for +: 'int' and 'dict'
+  File "<string>", line 1, in a
+  File "<string>", line 1, in b
+  File "<string>", line 1, in c
+----- tcl -> python interface -----
+    while executing
+"py call c"
+    (procedure "d" line 1)
+    invoked from within
+"d"
+    (procedure "e" line 1)
+    invoked from within
+"e"}}
+
+#test py_call-1.7 {call of nonexistent functions} {
+#	list [catch {py call aosdinasdioa} err] $err
+#	py eval {def a(): raise Exception("aaa")}
+#	list [catch {py call a} err] $err
+#} {1 {}}
+
+#test py_call-1.6 {call of nonexistent object methods} {
+#	list [catch {py call aosdinasdioa.asda} err] $err
+#} {1 {}}
+#
+#test py_call-1.7 {call of object nonexistent methods} {
+#	py eval {a = "aaa"}
+#	list [catch {py call a.ccc} err] $err
+#} {1 {}}
 
 # =========
 # cleanup
