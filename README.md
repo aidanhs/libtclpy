@@ -46,6 +46,7 @@ example tclsh session:
 
 ```
 % load libtclpy0.1.so
+%
 % py eval {def mk(dir): os.mkdir(dir)}
 % py eval {def rm(dir): os.rmdir(dir); return 15}
 % py import os
@@ -53,12 +54,14 @@ example tclsh session:
 creating 'testdir'
 % set b [py call rm testdir]
 15
+%
 % py import StringIO
 % py eval {sio = StringIO.StringIO()}
 % py call sio.write someinput
 None
 % set c [py call sio.getvalue]
 someinput
+%
 % py eval {divide = lambda x: 1.0/int(x)}
 % set d [py call divide 16]
 0.0625
@@ -66,6 +69,7 @@ someinput
 1 {ZeroDivisionError: float division by zero
   File "<string>", line 1, in <lambda>
 ----- tcl -> python interface -----}
+%
 % py import json
 % py eval {
 def jobj(*args):
