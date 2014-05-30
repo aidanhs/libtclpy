@@ -1,3 +1,10 @@
+0.2 - 2014-05-30
+
+	* Added 'py import' command
+	* Added 'py call' command
+	* Handle exceptions in a sane way
+	* Remove autotools
+
 0.1 - 2014-01-05
 
 	* Initial release with 'py eval' command
