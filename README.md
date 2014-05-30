@@ -3,12 +3,7 @@ tclpy
 
 This is a tcl extension for interacting with Python, targeting tcl >= 8.4.
 
-The extension itself (files: generic/\*, tests/tclpy.test) is available
-under the 3-clause BSD license (see "LICENSE").
-
-The tools for building and testing the extension (files: configure.in,
-Makefile.in, tclconfig/\*, tests/all.tcl, win/\*) are distributed under the terms
-in "LICENSE.tea".
+The extension is available under the 3-clause BSD license (see "LICENSE").
 
 USAGE
 -----
@@ -101,27 +96,6 @@ example will install the extension in the /opt/tcl directory.
 	$ ./configure --prefix=/opt/tcl
 	$ make
 	$ make install
-
-WINDOWS BUILD
--------------
-
-The tclpy Windows build is untested - the instructions below are for
-generic TEA extensions and may or may not work.
-
-The recommended method to build extensions under windows is to use the
-Msys + Mingw build process. This provides a Unix-style build while
-generating native Windows binaries. Using the Msys + Mingw build tools
-means that you can use the same configure script as per the Unix build
-to create a Makefile. See the tcl/win/README file for the URL of
-the Msys + Mingw download.
-
-If you have VC++ then you may wish to use the files in the win
-subdirectory and build the extension using just VC++. These files have
-been designed to be as generic as possible but will require some
-additional maintenance by the project developer to synchronise with
-the TEA configure.in and Makefile.in files. Instructions for using the
-VC++ makefile are written in the first part of the Makefile.vc
-file.
 
 TODO
 ----

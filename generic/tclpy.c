@@ -289,7 +289,7 @@ Tclpy_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 	if (Tcl_PkgRequire(interp, "Tcl", "8.5", 0) == NULL)
 		return TCL_ERROR;
-	if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
+	if (Tcl_PkgProvide(interp, "tclpy", PACKAGE_VERSION) != TCL_OK)
 		return TCL_ERROR;
 
 	Tcl_Command cmd = Tcl_CreateObjCommand(interp, "py",

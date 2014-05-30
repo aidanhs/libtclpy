@@ -1,10 +1,6 @@
 *.swp
 
 # Intermediate build files
-autom4te.cache/
-Makefile
-config.log
-config.status
 tclpy.o
 
 # Build output
