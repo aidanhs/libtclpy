@@ -25,21 +25,22 @@ CFLAGS = \
 	$(CFLAGS_WARN) $(CFLAGS_NOWARN) \
 	$(CFLAGS_FAST)
 
-TCLCONFIG=/usr/lib/tclConfig.sh
+TCLCONFIG?=/usr/lib/tclConfig.sh
 TCL_LIB     = $(shell . $(TCLCONFIG); echo $$TCL_LIB_SPEC)
 TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
+PY_LIB      = $(shell python-config --libs)
+PY_INCLUDE  = $(shell python-config --includes)
 
 
 default: libtclpy$(PACKAGE_VERSION).so
 
 
 libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
-	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) \
-		-lpthread -ldl -lutil -lm -lpython2.7 -L/usr/lib/python2.7/config
+	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) $(PY_LIB)
 
 tclpy.o:
 	gcc -fPIC $(CFLAGS) $(DFLAGS) \
-		-I/usr/include/python2.7 $(TCL_INCLUDE) -c ./generic/tclpy.c -o tclpy.o
+		$(PY_INCLUDE) $(TCL_INCLUDE) -c ./generic/tclpy.c -o tclpy.o
 
 pkgIndex.tcl: pkgIndex.tcl.in
 	sed "s/PACKAGE_VERSION/$(PACKAGE_VERSION)/g" pkgIndex.tcl.in > pkgIndex.tcl
