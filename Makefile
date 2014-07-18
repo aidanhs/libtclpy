@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 0.1
+PACKAGE_VERSION = 0.2
 
 DFLAGS = -DPACKAGE_VERSION='"$(PACKAGE_VERSION)"'
 
@@ -36,7 +36,9 @@ default: libtclpy$(PACKAGE_VERSION).so
 
 
 libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
+	rm -f libtclpy.so
 	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) $(PY_LIB)
+	ln -s $@ libtclpy.so
 
 tclpy.o:
 	gcc -fPIC $(CFLAGS) $(DFLAGS) \
