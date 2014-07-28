@@ -40,7 +40,7 @@ Reference:
 example tclsh session:
 
 ```
-% load libtclpy0.1.so
+% load libtclpy.so
 %
 % py eval {def mk(dir): os.mkdir(dir)}
 % py eval {def rm(dir): os.rmdir(dir); return 15}
