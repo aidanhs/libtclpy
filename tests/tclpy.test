@@ -160,6 +160,12 @@ test modules-1.1 {hashlib module} {
 	py call a
 } {5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8}
 
+test modules-1.2 {zlib module} {
+	py import zlib
+	py eval {def a(): return zlib.decompress('x\x9cKLL\x04\x00\x02I\x01$')}
+	py call a
+} {aaa}
+
 # =========
 # cleanup
 # =========
