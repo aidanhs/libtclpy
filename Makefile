@@ -8,7 +8,8 @@ CFLAGS_SEC = \
 	--param=ssp-buffer-size=4 \
 	-Wformat \
 	-Werror=format-security \
-	-D_FORTIFY_SOURCE=2
+	-D_FORTIFY_SOURCE=2\
+	-Wl,-z,relro,-z,now
 # Protect against my own poor programming
 CFLAGS_SAFE = -fno-strict-overflow
 # Tell me when I'm doing something wrong
