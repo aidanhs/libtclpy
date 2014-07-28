@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <tcl.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 // Need an integer we can use for detecting python errors, assume we'll never
 // use TCL_BREAK
@@ -296,6 +297,10 @@ Tclpy_Init(Tcl_Interp *interp)
 		(Tcl_ObjCmdProc *) Py_Cmd, (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 	if (cmd == NULL)
 		return TCL_ERROR;
+
+	/* Hack to fix Python C extensions not linking to libpython*.so */
+	/* https://mail.python.org/pipermail/new-bugs-announce/2008-November/003322.html */
+	dlopen(PY_LIBFILE, RTLD_LAZY | RTLD_GLOBAL);
 
 	Py_Initialize(); /* void */
 

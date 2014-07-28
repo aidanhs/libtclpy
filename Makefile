@@ -37,6 +37,9 @@ TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
 PY_LIB      = $(shell python-config --libs)
 PY_INCLUDE  = $(shell python-config --includes)
 
+PY_LIBFILE  = $(shell python -c 'import distutils.sysconfig; print distutils.sysconfig.get_config_var("LDLIBRARY")')
+CFLAGS += -DPY_LIBFILE='"$(PY_LIBFILE)"'
+
 
 default: libtclpy$(PACKAGE_VERSION).so
 
