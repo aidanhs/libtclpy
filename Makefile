@@ -26,7 +26,7 @@ CFLAGS = \
 	$(CFLAGS_FAST)
 
 TCLCONFIG?=/usr/lib/tclConfig.sh
-TCL_LIB     = $(shell . $(TCLCONFIG); echo $$TCL_LIB_SPEC)
+TCL_LIB     = $(shell . $(TCLCONFIG); echo $$TCL_STUB_LIB_SPEC) -DUSE_TCL_STUBS
 TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
 PY_LIB      = $(shell python-config --libs)
 PY_INCLUDE  = $(shell python-config --includes)
