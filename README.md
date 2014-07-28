@@ -87,15 +87,22 @@ a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}
 UNIX BUILD
 ----------
 
-Building under most UNIX systems is easy, just run the configure script
-and then run make. For more information about the build process, see
-the tcl/unix/README file in the Tcl src dist. The following minimal
-example will install the extension in the /opt/tcl directory.
+The build process is very simple. Make sure you can run python-config and have
+a tclConfig.sh file somewhere. For Ubuntu the process would be:
 
-	$ cd sampleextension
-	$ ./configure --prefix=/opt/tcl
+	$ sudo apt-get install python-dev tcl-dev
 	$ make
-	$ make install
+
+For other distros you would need give the path of tclConfig.sh:
+
+	$ make TCLCONFIG=/usr/lib/tclConfig.sh
+
+TESTS
+-----
+
+Run the tests with
+
+	$ make test
 
 TODO
 ----
@@ -113,6 +120,7 @@ In order of priority:
    - http://www.velocityreviews.com/forums/t741756-embedded-python-static-modules.html
    - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
+ - allow python to call back into tcl
  - allow statically compiling tclpy
  - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
