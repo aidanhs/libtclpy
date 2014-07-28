@@ -25,6 +25,11 @@ CFLAGS = \
 	$(CFLAGS_WARN) $(CFLAGS_NOWARN) \
 	$(CFLAGS_FAST)
 
+# TODO:
+#  - check python-config works
+#  - check provided tclConfig.sh exists
+#  - check stubs are supported (TCL_SUPPORTS_STUBS)
+
 TCLCONFIG?=/usr/lib/tclConfig.sh
 TCL_LIB     = $(shell . $(TCLCONFIG); echo $$TCL_STUB_LIB_SPEC) -DUSE_TCL_STUBS
 TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
