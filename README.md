@@ -1,7 +1,7 @@
 tclpy
 =====
 
-This is a tcl extension for interacting with Python, targeting tcl >= 8.4.
+This is a tcl extension for interacting with Python, targeting tcl >= 8.5.
 
 The extension is available under the 3-clause BSD license (see "LICENSE").
 
