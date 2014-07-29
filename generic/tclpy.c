@@ -299,7 +299,7 @@ Tclpy_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 
 	/* Hack to fix Python C extensions not linking to libpython*.so */
-	/* https://mail.python.org/pipermail/new-bugs-announce/2008-November/003322.html */
+	/* http://bugs.python.org/issue4434 */
 	dlopen(PY_LIBFILE, RTLD_LAZY | RTLD_GLOBAL);
 
 	Py_Initialize(); /* void */
