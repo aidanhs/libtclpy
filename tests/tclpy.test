@@ -136,20 +136,18 @@ test py_call-1.8 {stacked call exception} {
     invoked from within
 "e"}}
 
-#test py_call-1.7 {call of nonexistent functions} {
-#	list [catch {py call aosdinasdioa} err] $err
-#	py eval {def a(): raise Exception("aaa")}
-#	list [catch {py call a} err] $err
-#} {1 {}}
+# TODO: this error message is terrible
+test py_call-1.9 {call of nonexistent functions} {
+	list [catch {py call aosdin} err] $err
+} {1 {AttributeError: 'module' object has no attribute 'aosdin'
+----- tcl -> python interface -----}}
 
-#test py_call-1.6 {call of nonexistent object methods} {
-#	list [catch {py call aosdinasdioa.asda} err] $err
-#} {1 {}}
-#
-#test py_call-1.7 {call of object nonexistent methods} {
-#	py eval {a = "aaa"}
-#	list [catch {py call a.ccc} err] $err
-#} {1 {}}
+# TODO: this error message could be improved ("has no method")
+test py_call-1.10 {call of nonexistent object methods} {
+	py eval {a = "aaa"}
+	list [catch {py call a.aosdin} err] $err
+} {1 {AttributeError: 'str' object has no attribute 'aosdin'
+----- tcl -> python interface -----}}
 
 # =========
 # MODULES
