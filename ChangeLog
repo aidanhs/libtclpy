@@ -1,3 +1,8 @@
+0.3 - unreleased
+
+	* Use tcl stubs for forwards compatibility of tcl versions
+	* C extensions should work properly
+
 0.2 - 2014-05-30
 
 	* Added 'py import' command
