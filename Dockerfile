@@ -16,6 +16,7 @@ ENV PATH /opt/tcl/bin:$PATH
 ENV LD_LIBRARY_PATH /opt/tcl/lib
 ENV LIBRARY_PATH /opt/tcl/lib
 
+RUN yum install -y zlib-devel sqlite-devel
 ADD https://www.python.org/ftp/python/2.7.8/Python-2.7.8.tgz /root/
 RUN cd /root && tar xf /root/Python-2.7.8.tgz
 RUN cd /root/Python-2.7.8 && ./configure --enable-shared --prefix=/opt/python && make && make install
