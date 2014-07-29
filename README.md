@@ -128,5 +128,5 @@ In order of priority:
    trace in errorInfo
  - py call of non-existing function says raises attribute err, should be a
    NameError
- - make `py call` look in the builtins module
+ - make `py call` look in the builtins module - http://stackoverflow.com/a/11181607
  - all TODOs
