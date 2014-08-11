@@ -149,6 +149,21 @@ test py_call-1.10 {call of nonexistent object methods} {
 } {1 {AttributeError: 'str' object has no attribute 'aosdin'
 ----- tcl -> python interface -----}}
 
+test py_call-1.11 {return True} {
+	py eval {def a(): return True}
+	py call a
+} {1}
+
+test py_call-1.12 {return False} {
+	py eval {def a(): return False}
+	py call a
+} {0}
+
+test py_call-1.13 {return None} {
+	py eval {def a(): return None}
+	py call a
+} {}
+
 # =========
 # MODULES
 # =========

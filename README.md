@@ -20,7 +20,10 @@ General notes:
 Reference:
  - `py call ?obj.?func ?arg ...?`
    - `takes: name of a python function`
-   - `returns: return value of function with str() applied to it`
+   - `returns: return value of function with str() applied to it, except:`
+     - `True is converted to 1`
+     - `False is converted to 0`
+     - `None is converted to an empty string`
    - `side effects: executes function`
    - `func` may be a dot qualified name (i.e. object or module method)
  - `py eval evalString`

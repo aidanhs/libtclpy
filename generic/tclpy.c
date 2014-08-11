@@ -160,8 +160,19 @@ PyCall_Cmd(
 	if (pRet == NULL)
 		return PY_ERROR;
 
-	PyObject *pStrRet = PyObject_Str(pRet);
+	PyObject *pStrRet;
+	/* Do conversions from python to tcl */
+	if (pRet == Py_None) {
+		pStrRet = PyString_FromString("");
+	} else if (pRet == Py_True) {
+		pStrRet = PyString_FromString("1");
+	} else if (pRet == Py_False) {
+		pStrRet = PyString_FromString("0");
+	} else {
+		pStrRet = PyObject_Str(pRet);
+	}
 	Py_DECREF(pRet);
+
 	if (pStrRet == NULL)
 		return PY_ERROR;
 
