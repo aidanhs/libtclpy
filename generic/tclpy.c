@@ -10,6 +10,31 @@
 static PyObject *pFormatException = NULL;
 static PyObject *pFormatExceptionOnly = NULL;
 
+static char *
+pyObjToTcl(PyObject *pObj)
+{
+	PyObject *pStrObj;
+
+	/* Do conversions from python to tcl */
+	if (pObj == Py_None) {
+		pStrObj = PyString_FromString("");
+	} else if (pObj == Py_True) {
+		pStrObj = PyString_FromString("1");
+	} else if (pObj == Py_False) {
+		pStrObj = PyString_FromString("0");
+	} else {
+		pStrObj = PyObject_Str(pObj);
+	}
+
+	if (pStrObj == NULL)
+		return NULL;
+
+	char *str = PyString_AS_STRING(pStrObj);
+	Py_DECREF(pStrObj);
+
+	return str;
+}
+
 // Returns a string that must be 'free'd containing an error and traceback, or
 // NULL if there was no Python error
 static char *
@@ -160,24 +185,8 @@ PyCall_Cmd(
 	if (pRet == NULL)
 		return PY_ERROR;
 
-	PyObject *pStrRet;
-	/* Do conversions from python to tcl */
-	if (pRet == Py_None) {
-		pStrRet = PyString_FromString("");
-	} else if (pRet == Py_True) {
-		pStrRet = PyString_FromString("1");
-	} else if (pRet == Py_False) {
-		pStrRet = PyString_FromString("0");
-	} else {
-		pStrRet = PyObject_Str(pRet);
-	}
+	char *ret = pyObjToTcl(pRet);
 	Py_DECREF(pRet);
-
-	if (pStrRet == NULL)
-		return PY_ERROR;
-
-	char *ret = PyString_AS_STRING(pStrRet);
-	Py_DECREF(pStrRet);
 	if (ret == NULL)
 		return PY_ERROR;
 
