@@ -24,9 +24,10 @@ pyObjToTcl(PyObject *pObj)
 		pStrObj = PyObject_Str(pObj);
 		if (pStrObj == NULL)
 			return NULL;
-		char *strObj = PyString_AS_STRING(pStrObj);
+		tObj = Tcl_NewStringObj(
+			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
+		);
 		Py_DECREF(pStrObj);
-		tObj = Tcl_NewStringObj(strObj, -1);
 	}
 
 	return tObj;

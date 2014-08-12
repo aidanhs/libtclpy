@@ -164,6 +164,12 @@ test py_call-1.13 {return None} {
 	py call a
 } {}
 
+test py_call-1.14 {return null byte} {
+	py eval {def a(): return '\0'}
+	set a [py call a]
+	list [string length $a] [expr {$a == "\0"}]
+} {1 1}
+
 # =========
 # MODULES
 # =========
