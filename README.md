@@ -26,6 +26,7 @@ Reference:
      - `None is converted to an empty string`
      - `Python 'str' objects are considered to be byte arrays`
      - `Python 'unicode' objects are considered to be unicode strings`
+     - `Python sequence objects (supporting indexing) are converted to lists`
    - `side effects: executes function`
    - `func` may be a dot qualified name (i.e. object or module method)
  - `py eval evalString`

@@ -5,6 +5,7 @@
 	* None, True and False are converted to sane tcl values
 	* Allow null bytes returned in python strings
 	* Define unicode behaviour
+	* Python sequences are converted to tcl lists
 
 0.2 - 2014-05-30
 

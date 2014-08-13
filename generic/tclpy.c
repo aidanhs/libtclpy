@@ -11,10 +11,14 @@ static PyObject *pFormatException = NULL;
 static PyObject *pFormatExceptionOnly = NULL;
 
 static Tcl_Obj *
-pyObjToTcl(PyObject *pObj)
+pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 {
-	PyObject *pStrObj;
 	Tcl_Obj *tObj;
+	PyObject *pStrObj;
+
+	Py_ssize_t i, len;
+	PyObject *pVal = NULL;
+	Tcl_Obj *tVal;
 
 	/*
 	 * The ordering must always be more 'specific' types first. E.g. a
@@ -51,7 +55,22 @@ pyObjToTcl(PyObject *pObj)
 		Py_DECREF(pStrObj);
 	//} else if (PyNumber_Check(pObj)) {
 	//} else if (PyMapping_Check(pObj)) {
-	//} else if (PySequence_Check(pObj)) {
+	} else if (PySequence_Check(pObj)) {
+		tObj = Tcl_NewListObj(0, NULL);
+		len = PySequence_Length(pObj);
+		if (len == -1)
+			return NULL;
+
+		for (i = 0; i < len; i++) {
+			pVal = PySequence_GetItem(pObj, i);
+			if (pVal == NULL)
+				return NULL;
+			tVal = pyObjToTcl(interp, pVal);
+			Py_DECREF(pVal);
+			if (tVal == NULL)
+				return NULL;
+			Tcl_ListObjAppendElement(interp, tObj, tVal);
+		}
 	} else {
 		/* Get python string representation of other objects */
 		pStrObj = PyObject_Str(pObj);
@@ -216,7 +235,7 @@ PyCall_Cmd(
 	if (pRet == NULL)
 		return PY_ERROR;
 
-	Tcl_Obj *tRet = pyObjToTcl(pRet);
+	Tcl_Obj *tRet = pyObjToTcl(interp, pRet);
 	Py_DECREF(pRet);
 	if (tRet == NULL)
 		return PY_ERROR;

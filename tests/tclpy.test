@@ -100,9 +100,9 @@ test py_call-1.5 {call of object methods} {
 } {btest}
 
 test py_call-1.6 {basic call with complex types} {
-	py eval {def a(): return [(1,2),["a","b"],{"x":3,"y":4}]}
+	py eval {def a(): return [(1,2),[u"a",["b",7]],{"x":[(3,4),5],"y":4}]}
 	py call a
-} {[(1, 2), ['a', 'b'], {'y': 4, 'x': 3}]}
+} {{1 2} {a {b 7}} {{'y': 4, 'x': [(3, 4), 5]}}}
 
 test py_call-1.7 {simple call exception} {
 	py eval {a = lambda: 1/0}
@@ -211,7 +211,7 @@ test module-1.4 {sqlite3 module} {
 	py call b.execute "insert into x values (18)"
 	py call b.execute "select avg(y) from x"
 	py call b.fetchone
-} {(9.5,)}
+} {9.5}
 
 # =========
 # cleanup
