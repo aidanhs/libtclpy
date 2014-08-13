@@ -33,9 +33,9 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 	 * - True -> 1, False -> 0
 	 * - string -> tcl byte string
 	 * - unicode -> tcl unicode string
-	 * - number protocol -> tcl number (unimplemented)
-	 * - mapping protocol -> tcl dict (unimplemented)
-	 * - sequence protocol -> tcl list (unimplemented)
+	 * - number protocol -> tcl number
+	 * - mapping protocol -> tcl dict
+	 * - sequence protocol -> tcl list
 	 * - other -> error (currently converts to string)
 	 */
 

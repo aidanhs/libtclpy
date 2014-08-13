@@ -22,15 +22,16 @@ Reference:
    - `takes: name of a python function`
    - `returns: return value of function with the first appropriate conversion
       applied from the list below:`
+     - `None is converted to an empty string`
      - `True is converted to 1`
      - `False is converted to 0`
-     - `None is converted to an empty string`
      - `Python 'str' objects are considered to be byte arrays`
      - `Python 'unicode' objects are considered to be unicode strings`
-     - `Python sequence objects (supporting indexing, e.g. python lists) are
-        converted to tcl lists`
+     - `Python 'number' objects are converted to base 10 if necessary`
      - `Python mapping objects (supporting key-val mapping, e.g. python dicts)
         are converted to tcl dicts`
+     - `Python sequence objects (supporting indexing, e.g. python lists) are
+        converted to tcl lists`
      - `Otherwise, the str function is applied to the python object`
    - `side effects: executes function`
    - `func` may be a dot qualified name (i.e. object or module method)
