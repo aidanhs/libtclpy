@@ -16,11 +16,23 @@ pyObjToTcl(PyObject *pObj)
 	PyObject *pStrObj;
 	Tcl_Obj *tObj;
 
+	/*
+	 * The ordering must always be more 'specific' types first. E.g. a
+	 * string also obeys the sequence protocol...but we probably want it
+	 * to be a string rather than a list. Suggested order below:
+	 * - None -> {}
+	 * - True -> 1, False -> 0
+	 * - string -> tcl byte string
+	 * - unicode -> tcl unicode string
+	 * - number protocol -> tcl number (unimplemented)
+	 * - mapping protocol -> tcl dict (unimplemented)
+	 * - sequence protocol -> tcl list (unimplemented)
+	 * - other -> error (currently converts to string)
+	 */
+
 	if (pObj == Py_None) {
-		/* None -> {} */
 		tObj = Tcl_NewObj();
 	} else if (pObj == Py_True || pObj == Py_False) {
-		/* True -> 1, False -> 0 */
 		tObj = Tcl_NewBooleanObj(pObj == Py_True);
 	} else if (PyString_Check(pObj)) {
 		/* Strings are considered to be byte arrays */
@@ -37,6 +49,9 @@ pyObjToTcl(PyObject *pObj)
 			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
 		);
 		Py_DECREF(pStrObj);
+	//} else if (PyNumber_Check(pObj)) {
+	//} else if (PyMapping_Check(pObj)) {
+	//} else if (PySequence_Check(pObj)) {
 	} else {
 		/* Get python string representation of other objects */
 		pStrObj = PyObject_Str(pObj);
