@@ -49,7 +49,7 @@ libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
 	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) $(PY_LIB)
 	ln -s $@ libtclpy.so
 
-tclpy.o:
+tclpy.o: generic/tclpy.c
 	gcc -fPIC $(CFLAGS) $(DFLAGS) \
 		$(PY_INCLUDE) $(TCL_INCLUDE) -c ./generic/tclpy.c -o tclpy.o
 
