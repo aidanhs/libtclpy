@@ -52,7 +52,7 @@ Reference:
 example tclsh session:
 
 ```
-% load libtclpy.so
+% load ./libtclpy.so
 %
 % py eval {def mk(dir): os.mkdir(dir)}
 % py eval {def rm(dir): os.rmdir(dir); return 15}
@@ -65,7 +65,6 @@ creating 'testdir'
 % py import StringIO
 % py eval {sio = StringIO.StringIO()}
 % py call sio.write someinput
-None
 % set c [py call sio.getvalue]
 someinput
 %
@@ -92,8 +91,22 @@ t\"est 11\{24
 t\"est 11\{24 6 5
 % set e [py call jobj {*}$e]
 {"t\"est": "11{24", "6": "5"}
-% puts "a: $a, b: $b, c: $c, d: $d, e: $e"
-a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}
+%
+% py import sqlite3
+% py eval {b = sqlite3.connect(":memory:").cursor()}
+% py eval {def exe(sql, *args): b.execute(sql, args)}
+% py call exe "create table x(y integer, z integer)"
+% py call exe "insert into x values (?,?)" 1 5
+% py call exe "insert into x values (?,?)" 7 9
+% py call exe "select avg(y), min(z) from x"
+% py call b.fetchone
+4.0 5
+% py call exe "select * from x"
+% set f [py call b.fetchall]
+{1 5} {7 9}
+%
+% puts "a: $a, b: $b, c: $c, d: $d, e: $e, f: $f"
+a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}, f: {1 5} {7 9}
 ```
 
 UNIX BUILD
