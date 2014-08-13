@@ -1,4 +1,4 @@
-0.3 - unreleased
+0.3 - 2014-08-13
 
 	* Use tcl stubs for forwards compatibility of tcl versions
 	* C extensions should work properly
