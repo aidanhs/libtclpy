@@ -99,27 +99,14 @@ test py_call-1.5 {call of object methods} {
 	py call a.read
 } {btest}
 
-test py_call-1.6 {basic call with complex types} {
-	py eval {def a(): return [
-			(1,2),
-			[u"a",["b",7]],
-			{"x":[(3,4),{'a':{'b':'c'}}],"y":(4,5,6)}]}
-	set a [py call a]
-	set ad [lindex $a 2]
-	set ada [lindex [dict get $ad x] 1]
-	list \
-		[lindex $a 0] [lindex $a 1] [lindex [dict get $ad x] 0]\
-		[dict get $ad y] [dict get [dict get $ada a] b]
-} {{1 2} {a {b 7}} {3 4} {4 5 6} c}
-
-test py_call-1.7 {simple call exception} {
+test py_call-1.6 {simple call exception} {
 	py eval {a = lambda: 1/0}
 	list [catch {py call a} err] $err
 } {1 {ZeroDivisionError: integer division or modulo by zero
   File "<string>", line 1, in <lambda>
 ----- tcl -> python interface -----}}
 
-test py_call-1.8 {stacked call exception} {
+test py_call-1.7 {stacked call exception} {
 	py eval {def a(): return 5 + dict()}
 	py eval {def b(): return a()}
 	py eval {def c(): return b()}
@@ -145,49 +132,65 @@ test py_call-1.8 {stacked call exception} {
 "e"}}
 
 # TODO: this error message is terrible
-test py_call-1.9 {call of nonexistent functions} {
+test py_call-1.8 {call of nonexistent functions} {
 	list [catch {py call aosdin} err] $err
 } {1 {AttributeError: 'module' object has no attribute 'aosdin'
 ----- tcl -> python interface -----}}
 
 # TODO: this error message could be improved ("has no method")
-test py_call-1.10 {call of nonexistent object methods} {
+test py_call-1.9 {call of nonexistent object methods} {
 	py eval {a = "aaa"}
 	list [catch {py call a.aosdin} err] $err
 } {1 {AttributeError: 'str' object has no attribute 'aosdin'
 ----- tcl -> python interface -----}}
 
-test py_call-1.11 {return True} {
+# =========
+# TYPES
+# =========
+test types-1.1 {return True} {
 	py eval {def a(): return True}
 	py call a
 } {1}
 
-test py_call-1.12 {return False} {
+test types-1.2 {return False} {
 	py eval {def a(): return False}
 	py call a
 } {0}
 
-test py_call-1.13 {return None} {
+test types-1.3 {return None} {
 	py eval {def a(): return None}
 	py call a
 } {}
 
-test py_call-1.14 {return null byte} {
+test types-1.4 {return null byte} {
 	py eval {def a(): return '\0'}
 	set a [py call a]
 	list [string length $a] [expr {$a == "\0"}]
 } {1 1}
 
 # See gotcha 1 for explanation of roundabout way of getting a unicode object.
-test py_call-1.15 {return unicode object} {
+test types-1.5 {return unicode object} {
 	py eval {def a(): return '\xe0\xb2\xa0'.decode('utf-8')}
 	expr {[py call a] == "ಠ"}
 } {1}
 
-test py_call-1.16 {return literal bytes} {
+test types-1.6 {return literal bytes} {
 	py eval {def a(): return '\xe0\xb2\xa0'}
 	expr {[py call a] == "\xe0\xb2\xa0"}
 } {1}
+
+test types-1.7 {return nested lists and ductionaries} {
+	py eval {def a(): return [
+			(1,2),
+			[u"a",["b",7]],
+			{"x":[(3,4),{'a':{'b':'c'}}],"y":(4,5,6)}]}
+	set a [py call a]
+	set ad [lindex $a 2]
+	set ada [lindex [dict get $ad x] 1]
+	list \
+		[lindex $a 0] [lindex $a 1] [lindex [dict get $ad x] 0]\
+		[dict get $ad y] [dict get [dict get $ada a] b]
+} {{1 2} {a {b 7}} {3 4} {4 5 6} c}
 
 # =========
 # MODULES
