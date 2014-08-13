@@ -20,13 +20,18 @@ General notes:
 Reference:
  - `py call ?obj.?func ?arg ...?`
    - `takes: name of a python function`
-   - `returns: return value of function with str() applied to it, except:`
+   - `returns: return value of function with the first appropriate conversion
+      applied from the list below:`
      - `True is converted to 1`
      - `False is converted to 0`
      - `None is converted to an empty string`
      - `Python 'str' objects are considered to be byte arrays`
      - `Python 'unicode' objects are considered to be unicode strings`
-     - `Python sequence objects (supporting indexing) are converted to lists`
+     - `Python sequence objects (supporting indexing, e.g. python lists) are
+        converted to tcl lists`
+     - `Python mapping objects (supporting key-val mapping, e.g. python dicts)
+        are converted to tcl dicts`
+     - `Otherwise, the str function is applied to the python object`
    - `side effects: executes function`
    - `func` may be a dot qualified name (i.e. object or module method)
  - `py eval evalString`

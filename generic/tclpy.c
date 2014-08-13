@@ -20,6 +20,11 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 	PyObject *pVal = NULL;
 	Tcl_Obj *tVal;
 
+	PyObject *pItems = NULL;
+	PyObject *pItem = NULL;
+	PyObject *pKey = NULL;
+	Tcl_Obj *tKey;
+
 	/*
 	 * The ordering must always be more 'specific' types first. E.g. a
 	 * string also obeys the sequence protocol...but we probably want it
@@ -54,7 +59,37 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 		);
 		Py_DECREF(pStrObj);
 	//} else if (PyNumber_Check(pObj)) {
-	//} else if (PyMapping_Check(pObj)) {
+	} else if (PyMapping_Check(pObj)) {
+		tObj = Tcl_NewDictObj();
+		len = PyMapping_Length(pObj);
+		if (len == -1)
+			return NULL;
+		pItems = PyMapping_Items(pObj);
+		if (pItems == NULL)
+			return NULL;
+#define ONERR(VAR) if (VAR == NULL) { Py_DECREF(pItems); return NULL; }
+		for (i = 0; i < len; i++) {
+			pItem = PySequence_GetItem(pItems, i);
+			ONERR(pItem)
+			pKey = PySequence_GetItem(pItem, 0);
+			ONERR(pKey)
+			pVal = PySequence_GetItem(pItem, 1);
+			ONERR(pVal)
+			tKey = pyObjToTcl(interp, pKey);
+			Py_DECREF(pKey);
+			ONERR(tKey);
+			tVal = pyObjToTcl(interp, pVal);
+			Py_DECREF(pVal);
+			ONERR(tVal);
+			Tcl_DictObjPut(interp, tObj, tKey, tVal);
+		}
+#undef ONERR
+		Py_DECREF(pItems);
+		/* Broke out of loop because of error */
+		if (i != len) {
+			Py_XDECREF(pItem);
+			return NULL;
+		}
 	} else if (PySequence_Check(pObj)) {
 		tObj = Tcl_NewListObj(0, NULL);
 		len = PySequence_Length(pObj);
