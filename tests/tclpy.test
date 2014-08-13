@@ -192,6 +192,16 @@ test types-1.7 {return nested lists and ductionaries} {
 		[dict get $ad y] [dict get [dict get $ada a] b]
 } {{1 2} {a {b 7}} {3 4} {4 5 6} c}
 
+test types-1.8 {return float} {
+	py eval {def a(): return 1.0/3}
+	py call a
+} {0.333333333333}
+
+test types-1.9 {return large integer} {
+	py eval {def a(): return 3 << 5000}
+	expr {[py call a] == 3 << 5000}
+} {1}
+
 # =========
 # MODULES
 # =========

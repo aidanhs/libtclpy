@@ -7,6 +7,7 @@
 	* Define unicode behaviour
 	* Python sequences are converted to tcl lists
 	* Python mapping objects are converted to tcl dicts
+	* Python number objects are now supported explicitly
 
 0.2 - 2014-05-30
 

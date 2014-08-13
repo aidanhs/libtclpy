@@ -58,7 +58,18 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
 		);
 		Py_DECREF(pStrObj);
-	//} else if (PyNumber_Check(pObj)) {
+	} else if (PyNumber_Check(pObj)) {
+		/* We go via string to support arbitrary length numbers */
+		if (PyInt_Check(pObj) || PyLong_Check(pObj)) {
+			pStrObj = PyNumber_ToBase(pObj, 10);
+		} else {
+			assert(PyComplex_Check(pObj) || PyFloat_Check(pObj));
+			pStrObj = PyObject_Str(pObj);
+		}
+		if (pStrObj == NULL)
+			return NULL;
+		tObj = Tcl_NewStringObj(PyString_AS_STRING(pStrObj), -1);
+		Py_DECREF(pStrObj);
 	} else if (PyMapping_Check(pObj)) {
 		tObj = Tcl_NewDictObj();
 		len = PyMapping_Length(pObj);
