@@ -24,6 +24,8 @@ Reference:
      - `True is converted to 1`
      - `False is converted to 0`
      - `None is converted to an empty string`
+     - `Python 'str' objects are considered to be byte arrays`
+     - `Python 'unicode' objects are considered to be unicode strings`
    - `side effects: executes function`
    - `func` may be a dot qualified name (i.e. object or module method)
  - `py eval evalString`
@@ -106,6 +108,17 @@ TESTS
 Run the tests with
 
 	$ make test
+
+GOTCHAS
+-------
+
+1. Be very careful when putting unicode characters into a inside a `py eval`
+call - they are decoded by the tcl parser and passed as literal bytes
+to the python interpreter. So if we directly have the character "ಠ", it is
+decoded to a utf-8 byte sequence and becomes u"\xe0\xb2\xa0" (where the \xXY are
+literal bytes) as seen by the Python interpreter.
+2. Escape sequences (e.g. `\x00`) inside py eval may be interpreted by tcl - use
+{} quoting to avoid this.
 
 TODO
 ----

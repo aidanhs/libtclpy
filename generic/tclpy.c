@@ -17,10 +17,28 @@ pyObjToTcl(PyObject *pObj)
 	Tcl_Obj *tObj;
 
 	if (pObj == Py_None) {
+		/* None -> {} */
 		tObj = Tcl_NewObj();
 	} else if (pObj == Py_True || pObj == Py_False) {
+		/* True -> 1, False -> 0 */
 		tObj = Tcl_NewBooleanObj(pObj == Py_True);
+	} else if (PyString_Check(pObj)) {
+		/* Strings are considered to be byte arrays */
+		tObj = Tcl_NewByteArrayObj(
+			(const unsigned char *)PyString_AS_STRING(pObj),
+			PyString_GET_SIZE(pObj)
+		);
+	} else if (PyUnicode_Check(pObj)) {
+		/* Unicode objects are interpreted as unicode strings */
+		pStrObj = PyUnicode_AsUTF8String(pObj);
+		if (pStrObj == NULL)
+			return NULL;
+		tObj = Tcl_NewStringObj(
+			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
+		);
+		Py_DECREF(pStrObj);
 	} else {
+		/* Get python string representation of other objects */
 		pStrObj = PyObject_Str(pObj);
 		if (pStrObj == NULL)
 			return NULL;

@@ -170,6 +170,17 @@ test py_call-1.14 {return null byte} {
 	list [string length $a] [expr {$a == "\0"}]
 } {1 1}
 
+# See gotcha 1 for explanation of roundabout way of getting a unicode object.
+test py_call-1.15 {return unicode object} {
+	py eval {def a(): return '\xe0\xb2\xa0'.decode('utf-8')}
+	expr {[py call a] == "ಠ"}
+} {1}
+
+test py_call-1.16 {return literal bytes} {
+	py eval {def a(): return '\xe0\xb2\xa0'}
+	expr {[py call a] == "\xe0\xb2\xa0"}
+} {1}
+
 # =========
 # MODULES
 # =========

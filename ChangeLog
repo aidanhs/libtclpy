@@ -3,7 +3,8 @@
 	* Use tcl stubs for forwards compatibility of tcl versions
 	* C extensions should work properly
 	* None, True and False are converted to sane tcl values
-	* Allow null bytes returned from python
+	* Allow null bytes returned in python strings
+	* Define unicode behaviour
 
 0.2 - 2014-05-30
 
