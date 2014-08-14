@@ -50,6 +50,7 @@ libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
 	ln -s $@ libtclpy.so
 
 tclpy.o: generic/tclpy.c
+	test -f $(TCLCONFIG)
 	gcc -fPIC $(CFLAGS) $(DFLAGS) \
 		$(PY_INCLUDE) $(TCL_INCLUDE) -c ./generic/tclpy.c -o tclpy.o
 
