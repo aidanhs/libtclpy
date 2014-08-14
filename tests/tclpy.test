@@ -179,7 +179,7 @@ test types-1.6 {return literal bytes} {
 	expr {[py call a] == "\xe0\xb2\xa0"}
 } {1}
 
-test types-1.7 {return nested lists and ductionaries} {
+test types-1.7 {return nested lists and dictionaries} {
 	py eval {def a(): return [
 			(1,2),
 			[u"a",["b",7]],

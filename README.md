@@ -1,7 +1,8 @@
 tclpy
 =====
 
-This is a tcl extension for interacting with Python, targeting tcl >= 8.5.
+This is a Tcl extension to effortlessly call Python from inside Tcl,
+targeting Tcl >= 8.5 and Python 2.6 - 2.7.
 
 The extension is available under the 3-clause BSD license (see "LICENSE").
 
@@ -112,15 +113,38 @@ a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}, f: {1 5} 
 UNIX BUILD
 ----------
 
-The build process is very simple. Make sure you can run python-config and have
-a tclConfig.sh file somewhere. For Ubuntu the process would be:
+It is assumed that you
+ - have got the repo (either by `git clone` or a tar.gz from the releases page).
+ - have updated your package lists.
 
-	$ sudo apt-get install python-dev tcl-dev
+The build process fairly simple:
+ - make sure `make` and `gcc` are installed.
+ - make sure you can run `python-config` and have the Python headers available
+   (usually installed by the Python development package for your distro).
+ - locate the tclConfig.sh file and make sure you have the Tcl headers available
+   (usually installed by the Tcl development package for your distro).
+ - run `make`, specifying the tclConfig.sh path if not `/usr/lib/tclConfig.sh`.
+
+On Ubuntu the default tclConfig.sh path is correct:
+
+	$ sudo apt-get install -y python-dev tcl-dev
+	$ cd libtclpy
 	$ make
 
-For other distros you would need give the path of tclConfig.sh:
+For other distros you may need give the path of tclConfig.sh. E.g. CentOS 6.5:
 
-	$ make TCLCONFIG=/usr/lib/tclConfig.sh
+	$ sudo yum install -y python-devel tcl-devel make gcc
+	$ cd libtclpy
+	$ make TCLCONFIG=/usr/lib64/tclConfig.sh
+
+Now try it out:
+
+	$ TCLLIBPATH=. tclsh
+	% package require tclpy
+	0.3
+	% py import random
+	% py call random.random
+	0.507094977417
 
 TESTS
 -----
@@ -145,6 +169,8 @@ TODO
 
 In order of priority:
 
+ - allow python to call back into tcl
+ - allow compiling on Windows
  - `py call -types [list t1 ...] func ?arg ...? : ?t1 ...? -> multi`
    (polymorphic args, polymorphic return)
  - unicode handling (exception messages, fn param, returns from calls...AS\_STRING is bad)
@@ -155,8 +181,9 @@ In order of priority:
    - http://www.velocityreviews.com/forums/t741756-embedded-python-static-modules.html
    - http://christian.hofstaedtler.name/blog/2013/01/embedding-python-on-win32.html
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
- - allow python to call back into tcl
- - allow statically compiling tclpy
+ - allow statically compiling
+ - check threading compatibility
+ - Python 3
  - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
  - return the short error line in the catch err variable and put the full stack
