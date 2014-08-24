@@ -40,9 +40,7 @@ PY_INCLUDE  = $(shell python-config --includes)
 PY_LIBFILE  = $(shell python -c 'import distutils.sysconfig; print distutils.sysconfig.get_config_var("LDLIBRARY")')
 CFLAGS += -DPY_LIBFILE='"$(PY_LIBFILE)"'
 
-
 default: libtclpy$(PACKAGE_VERSION).so
-
 
 libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
 	rm -f libtclpy.so
@@ -51,11 +49,10 @@ libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
 
 tclpy.o: generic/tclpy.c
 	test -f $(TCLCONFIG)
-	gcc -fPIC $(CFLAGS) $(DFLAGS) \
-		$(PY_INCLUDE) $(TCL_INCLUDE) -c ./generic/tclpy.c -o tclpy.o
+	gcc -fPIC $(CFLAGS) $(DFLAGS) $(PY_INCLUDE) $(TCL_INCLUDE) -c $< -o $@
 
 pkgIndex.tcl: pkgIndex.tcl.in
-	sed "s/PACKAGE_VERSION/$(PACKAGE_VERSION)/g" pkgIndex.tcl.in > pkgIndex.tcl
+	sed "s/PACKAGE_VERSION/$(PACKAGE_VERSION)/g" $< > $@
 
 clean:
 	rm -f *.so *.o pkgIndex.tcl
