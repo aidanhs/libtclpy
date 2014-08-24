@@ -1,5 +1,5 @@
-tclpy
-=====
+libtclpy
+========
 
 This is a Tcl extension to effortlessly call Python from inside Tcl,
 targeting Tcl >= 8.5 and Python 2.6 - 2.7.

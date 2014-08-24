@@ -28,7 +28,6 @@ CFLAGS = \
 
 # TODO:
 #  - check python-config works
-#  - check provided tclConfig.sh exists
 #  - check stubs are supported (TCL_SUPPORTS_STUBS)
 
 TCLCONFIG?=/usr/lib/tclConfig.sh
