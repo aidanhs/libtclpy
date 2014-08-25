@@ -123,7 +123,11 @@ The build process fairly simple:
    (usually installed by the Python development package for your distro).
  - locate the tclConfig.sh file and make sure you have the Tcl headers available
    (usually installed by the Tcl development package for your distro).
- - run `make`, specifying the tclConfig.sh path if not `/usr/lib/tclConfig.sh`.
+ - run `make`
+   - specifying the tclConfig.sh path if not `/usr/lib/tclConfig.sh`
+     (`TCLCONFIG=/path/to/tclConfig.sh`).
+   - disabling tcl stubs if you wish to use Python as the parent interpreter
+     (`TCL_STUBS=0`). Note this then requires compilation per Tcl interpreter.
 
 On Ubuntu the default tclConfig.sh path is correct:
 

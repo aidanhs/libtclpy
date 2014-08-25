@@ -403,10 +403,26 @@ static PyMethodDef TclPyMethods[] = {
 	{NULL, NULL, 0, NULL} /* Sentinel */
 };
 
+/* Keep track of the top level interpreter */
+typedef enum {
+	NO_PARENT,
+	TCL_PARENT,
+	PY_PARENT
+} ParentInterp;
+static ParentInterp parentInterp = NO_PARENT;
+
+int Tclpy_Init(Tcl_Interp *interp);
+int init_python_tclpy(Tcl_Interp* interp);
+
 int
 Tclpy_Init(Tcl_Interp *interp)
 {
 	/* TODO: all TCL_ERRORs should set an error return */
+
+	if (parentInterp == TCL_PARENT)
+		return TCL_ERROR;
+	if (parentInterp == NO_PARENT)
+		parentInterp = TCL_PARENT;
 
 	if (Tcl_InitStubs(interp, "8.5", 0) == NULL)
 		return TCL_ERROR;
@@ -424,7 +440,11 @@ Tclpy_Init(Tcl_Interp *interp)
 	/* http://bugs.python.org/issue4434 */
 	dlopen(PY_LIBFILE, RTLD_LAZY | RTLD_GLOBAL);
 
-	Py_Initialize(); /* void */
+	if (parentInterp != PY_PARENT) {
+		Py_Initialize(); /* void */
+		if (init_python_tclpy(interp) == -1)
+			return TCL_ERROR;
+	}
 
 	/* Get support for full tracebacks */
 	PyObject *pTraceModStr, *pTraceMod;
@@ -447,13 +467,42 @@ Tclpy_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 
+	return TCL_OK;
+}
+
+int
+init_python_tclpy(Tcl_Interp* interp)
+{
+	if (parentInterp == PY_PARENT)
+		return -1;
+	if (parentInterp == NO_PARENT)
+		parentInterp = PY_PARENT;
+	if (parentInterp == TCL_PARENT)
+		assert(interp != NULL);
+
+	if (interp == NULL)
+		interp = Tcl_CreateInterp();
+	if (parentInterp == PY_PARENT) {
+		if (Tclpy_Init(interp) == TCL_ERROR) {
+			return -1;
+		}
+	}
+
 	PyObject *m = Py_InitModule("tclpy", TclPyMethods);
 	if (m == NULL)
-		return TCL_ERROR;
+		return -1;
 	PyObject *pCap = PyCapsule_New(interp, "tclpy.interp", NULL);
 	if (PyObject_SetAttrString(m, "interp", pCap) == -1)
-		return TCL_ERROR;
+		return -1;
 	Py_DECREF(pCap);
 
-	return TCL_OK;
+	return 0;
+}
+
+PyMODINIT_FUNC
+inittclpy(void)
+{
+	if (init_python_tclpy(NULL) == -1)
+		return;
+	return;
 }

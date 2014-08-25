@@ -30,8 +30,15 @@ CFLAGS = \
 #  - check python-config works
 #  - check stubs are supported (TCL_SUPPORTS_STUBS)
 
+TCL_STUBS?=1
 TCLCONFIG?=/usr/lib/tclConfig.sh
-TCL_LIB     = $(shell . $(TCLCONFIG); echo $$TCL_STUB_LIB_SPEC) -DUSE_TCL_STUBS
+TCL_LIB     = $(shell . $(TCLCONFIG); \
+	if [ "$(TCL_STUBS)" = 1 ]; then \
+		echo "$$TCL_STUB_LIB_SPEC -DUSE_TCL_STUBS"; \
+	else \
+		echo "$$TCL_LIB_SPEC"; \
+	fi \
+)
 TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
 PY_LIB      = $(shell python-config --libs)
 PY_INCLUDE  = $(shell python-config --includes)
@@ -42,9 +49,10 @@ CFLAGS += -DPY_LIBFILE='"$(PY_LIBFILE)"'
 default: libtclpy$(PACKAGE_VERSION).so
 
 libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
-	rm -f libtclpy.so
+	rm -f libtclpy.so tclpy.so
 	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) $(PY_LIB)
 	ln -s $@ libtclpy.so
+	ln -s libtclpy.so tclpy.so
 
 tclpy.o: generic/tclpy.c
 	test -f $(TCLCONFIG)
