@@ -1,3 +1,9 @@
+0.4 - unreleased
+
+	* Expose the tcl interpreter in a Python module.
+	* Allow importing libtclpy in a parent Python interpreter.
+	* Added 'tclpy.eval' command for Python.
+
 0.3 - 2014-08-13
 
 	* Use tcl stubs for forwards compatibility of tcl versions

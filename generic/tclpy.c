@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <dlfcn.h>
 
+/* TCL LIBRARY BEGINS HERE */
+
 // Need an integer we can use for detecting python errors, assume we'll never
 // use TCL_BREAK
 #define PY_ERROR TCL_BREAK
@@ -399,9 +401,41 @@ Py_Cmd(
 	return ret;
 }
 
+/* PYTHON LIBRARY BEGINS HERE */
+
+static PyObject *
+tclpy_eval(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	static char *kwlist[] = {"tcl_code", NULL};
+	char *tclCode = NULL;
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &tclCode))
+		return NULL;
+
+	Tcl_Interp *interp = PyCapsule_Import("tclpy.interp", 0);
+
+	int result = Tcl_Eval(interp, tclCode);
+	Tcl_Obj *tResult = Tcl_GetObjResult(interp);
+
+	int tclStringSize;
+	char *tclString;
+	tclString = Tcl_GetStringFromObj(tResult, &tclStringSize);
+
+	if (result == TCL_ERROR) {
+		PyErr_SetString(PyExc_RuntimeError, tclString);
+		return NULL;
+	}
+	return Py_BuildValue("s#", tclString, tclStringSize);
+}
+
 static PyMethodDef TclPyMethods[] = {
+	{"eval",  (PyCFunction)tclpy_eval,
+		METH_VARARGS | METH_KEYWORDS,
+		"Set the converter for a type of literal value."},
 	{NULL, NULL, 0, NULL} /* Sentinel */
 };
+
+/* SHARED INITIALISATION BEGINS HERE */
 
 /* Keep track of the top level interpreter */
 typedef enum {

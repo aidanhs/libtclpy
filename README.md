@@ -1,13 +1,20 @@
 libtclpy
 ========
 
-This is a Tcl extension to effortlessly call Python from inside Tcl,
-targeting Tcl >= 8.5 and Python 2.6 - 2.7.
+This is a Tcl extension to effortlessly to call bidirectionally between Tcl and
+Python, targeting Tcl >= 8.5 and Python 2.6 - 2.7.
 
 The extension is available under the 3-clause BSD license (see "LICENSE").
 
 USAGE
 -----
+
+You can import the libtclpy in either a Tcl or Python parent interpreter. Doing
+so will initialise an interpreter for the other language and insert all
+libtclpy methods. This means you can call backwards and forwards between
+interpreters.
+
+*FROM TCL*
 
 General notes:
  - Unless otherwise noted, 'interpreter' refers to the python interpreter.
@@ -109,6 +116,25 @@ t\"est 11\{24 6 5
 % puts "a: $a, b: $b, c: $c, d: $d, e: $e, f: $f"
 a: , b: 15, c: someinput, d: 0.0625, e: {"t\"est": "11{24", "6": "5"}, f: {1 5} {7 9}
 ```
+
+*FROM PYTHON*
+
+Reference:
+ - `tclpy.eval(evalstring)`
+   - `takes: string of valid Tcl code`
+   - `returns: the final return value`
+   - `side effects: executes code in the Tcl interpreter`
+   - **Do not use with substituted input**
+   - `evalString` may be any valid Tcl code, including semicolons for single
+     line statements or multiline blocks
+   - errors reaching the Tcl interpreter top level are raised as an exception
+
+example python session:
+
+>>> import tclpy
+>>> a = tclpy.eval('list 1 [list 2 4 5] 3')
+>>> print a
+1 {2 4 5} 3
 
 UNIX BUILD
 ----------
