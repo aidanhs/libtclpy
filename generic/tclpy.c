@@ -402,6 +402,8 @@ Py_Cmd(
 int
 Tclpy_Init(Tcl_Interp *interp)
 {
+	/* TODO: all TCL_ERRORs should set an error return */
+
 	if (Tcl_InitStubs(interp, "8.5", 0) == NULL)
 		return TCL_ERROR;
 	if (Tcl_PkgRequire(interp, "Tcl", "8.5", 0) == NULL)
