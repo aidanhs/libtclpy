@@ -399,6 +399,10 @@ Py_Cmd(
 	return ret;
 }
 
+static PyMethodDef TclPyMethods[] = {
+	{NULL, NULL, 0, NULL} /* Sentinel */
+};
+
 int
 Tclpy_Init(Tcl_Interp *interp)
 {
@@ -442,6 +446,14 @@ Tclpy_Init(Tcl_Interp *interp)
 		Py_XDECREF(pFormatExceptionOnly);
 		return TCL_ERROR;
 	}
+
+	PyObject *m = Py_InitModule("tclpy", TclPyMethods);
+	if (m == NULL)
+		return TCL_ERROR;
+	PyObject *pCap = PyCapsule_New(interp, "tclpy.interp", NULL);
+	if (PyObject_SetAttrString(m, "interp", pCap) == -1)
+		return TCL_ERROR;
+	Py_DECREF(pCap);
 
 	return TCL_OK;
 }
