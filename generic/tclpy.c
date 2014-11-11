@@ -412,7 +412,18 @@ tclpy_eval(PyObject *self, PyObject *args, PyObject *kwargs)
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &tclCode))
 		return NULL;
 
+#ifdef Py_CAPSULE_H
 	Tcl_Interp *interp = PyCapsule_Import("tclpy.interp", 0);
+#else
+	PyObject *pyMod = PyImport_AddModule("tclpy");
+	if (pyMod == NULL)
+		return NULL;
+	PyObject *pyTclInterp = PyObject_GetAttrString(pyMod, "interp");
+	if (pyTclInterp == NULL)
+		return NULL;
+	Tcl_Interp *interp = PyCObject_AsVoidPtr(pyTclInterp);
+	Py_DECREF(pyTclInterp);
+#endif
 
 	int result = Tcl_Eval(interp, tclCode);
 	Tcl_Obj *tResult = Tcl_GetObjResult(interp);
@@ -525,7 +536,11 @@ init_python_tclpy(Tcl_Interp* interp)
 	PyObject *m = Py_InitModule("tclpy", TclPyMethods);
 	if (m == NULL)
 		return -1;
+#ifdef Py_CAPSULE_H
 	PyObject *pCap = PyCapsule_New(interp, "tclpy.interp", NULL);
+#else
+	PyObject *pCap = PyCObject_FromVoidPtrAndDesc(interp, (void *)"tclpy.interp", NULL);
+#endif
 	if (PyObject_SetAttrString(m, "interp", pCap) == -1)
 		return -1;
 	Py_DECREF(pCap);
