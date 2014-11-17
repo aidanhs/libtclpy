@@ -527,6 +527,8 @@ init_python_tclpy(Tcl_Interp* interp)
 
 	if (interp == NULL)
 		interp = Tcl_CreateInterp();
+	if (Tcl_Init(interp) != TCL_OK)
+		return -1;
 	if (parentInterp == PY_PARENT) {
 		if (Tclpy_Init(interp) == TCL_ERROR) {
 			return -1;
