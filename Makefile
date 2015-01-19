@@ -30,16 +30,23 @@ CFLAGS = \
 #  - check python-config works
 #  - check stubs are supported (TCL_SUPPORTS_STUBS)
 
-TCL_STUBS?=1
-TCLCONFIG?=/usr/lib/tclConfig.sh
-TCL_LIB     = $(shell . $(TCLCONFIG); \
+TCL_STUBS ?= 1
+TCLCONFIG ?= $(shell \
+	(X=/usr/lib/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
+	(X=/usr/lib64/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
+	(X=/usr/lib/tcl8.5/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
+	echo "" \
+)
+TCLCONFIG_TEST = test -f "$(TCLCONFIG)" || (echo "Couldn't find tclConfig.sh" && exit 1)
+
+TCL_LIB     = $(shell . "$(TCLCONFIG)"; \
 	if [ "$(TCL_STUBS)" = 1 ]; then \
 		echo "$$TCL_STUB_LIB_SPEC -DUSE_TCL_STUBS"; \
 	else \
 		echo "$$TCL_LIB_SPEC"; \
 	fi \
 )
-TCL_INCLUDE = $(shell . $(TCLCONFIG); echo $$TCL_INCLUDE_SPEC)
+TCL_INCLUDE = $(shell . "$(TCLCONFIG)"; echo $$TCL_INCLUDE_SPEC)
 PY_LIB      = $(shell python-config --libs)
 PY_INCLUDE  = $(shell python-config --includes)
 
@@ -49,13 +56,14 @@ CFLAGS += -DPY_LIBFILE='"$(PY_LIBFILE)"'
 default: libtclpy$(PACKAGE_VERSION).so
 
 libtclpy$(PACKAGE_VERSION).so: tclpy.o pkgIndex.tcl
+	@$(TCLCONFIG_TEST)
 	rm -f libtclpy.so tclpy.so
 	gcc -shared -fPIC $(CFLAGS) $< -o $@ -Wl,--export-dynamic $(TCL_LIB) $(PY_LIB)
 	ln -s $@ libtclpy.so
 	ln -s libtclpy.so tclpy.so
 
 tclpy.o: generic/tclpy.c
-	test -f $(TCLCONFIG)
+	@$(TCLCONFIG_TEST)
 	gcc -fPIC $(CFLAGS) $(DFLAGS) $(PY_INCLUDE) $(TCL_INCLUDE) -c $< -o $@
 
 pkgIndex.tcl: pkgIndex.tcl.in
