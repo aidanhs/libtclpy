@@ -6,6 +6,10 @@ Python, targeting Tcl >= 8.5 and Python 2.6 - 2.7.
 
 The extension is available under the 3-clause BSD license (see "LICENSE").
 
+Tcl users may also want to consider using
+[pyman](http://chiselapp.com/user/gwlester/repository/pyman/home), a Tcl package
+that provides a higher level of abstraction on top of tclpy.
+
 USAGE
 -----
 
