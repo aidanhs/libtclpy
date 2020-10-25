@@ -2,7 +2,7 @@ libtclpy
 ========
 
 This is a Tcl extension to effortlessly to call bidirectionally between Tcl and
-Python, targeting Tcl >= 8.5 and Python 2.6 - 2.7.
+Python, targeting Tcl >= 8.5 and Python 3.6+
 
 The extension is available under the 3-clause BSD license (see "LICENSE").
 
@@ -135,10 +135,12 @@ Reference:
 
 example python session:
 
+```
 >>> import tclpy
 >>> a = tclpy.eval('list 1 [list 2 4 5] 3')
 >>> print a
 1 {2 4 5} 3
+```
 
 UNIX BUILD
 ----------
@@ -217,7 +219,6 @@ In order of priority:
    - http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
  - allow statically compiling
  - check threading compatibility
- - Python 3
  - let `py eval` work with indented multiline blocks
  - `py import ?-from module? module : -> nil`
  - return the short error line in the catch err variable and put the full stack

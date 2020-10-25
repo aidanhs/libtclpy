@@ -51,19 +51,19 @@ test py_import-1.2 {basic import} -body {
 
 test py_import-1.3 {submodule import} -body {
 	py import xml.dom
-	py eval "import sys; assert 'dom' in dir(xml)"
+	py eval "assert 'dom' in dir(xml)"
 } -result {}
 
 test py_import-1.4 {non-existent import} -body {
 	list [catch {py import aosidas} err] $err
-} -result {1 {ImportError: No module named aosidas
+} -result {1 {ModuleNotFoundError: No module named 'aosidas'
 ----- tcl -> python interface -----}}
 
 test py_import-1.5 {non-existent import with full trace} -body {
 	proc aaa {} {py import aosidas}
 	list [catch {aaa} err] $err $::errorInfo
-} -result {1 {ImportError: No module named aosidas
------ tcl -> python interface -----} {ImportError: No module named aosidas
+} -result {1 {ModuleNotFoundError: No module named 'aosidas'
+----- tcl -> python interface -----} {ModuleNotFoundError: No module named 'aosidas'
 ----- tcl -> python interface -----
     while executing
 "py import aosidas"
@@ -94,15 +94,15 @@ test py_call-1.4 {call of module function} {
 } {atest}
 
 test py_call-1.5 {call of object methods} {
-	py import StringIO
-	py eval {a = StringIO.StringIO(); a.write('btest'); a.seek(0)}
+	py import io
+	py eval {a = io.StringIO(); a.write('btest'); a.seek(0)}
 	py call a.read
 } {btest}
 
 test py_call-1.6 {simple call exception} {
 	py eval {a = lambda: 1/0}
 	list [catch {py call a} err] $err
-} {1 {ZeroDivisionError: integer division or modulo by zero
+} {1 {ZeroDivisionError: division by zero
   File "<string>", line 1, in <lambda>
 ----- tcl -> python interface -----}}
 
@@ -134,7 +134,7 @@ test py_call-1.7 {stacked call exception} {
 # TODO: this error message is terrible
 test py_call-1.8 {call of nonexistent functions} {
 	list [catch {py call aosdin} err] $err
-} {1 {AttributeError: 'module' object has no attribute 'aosdin'
+} {1 {AttributeError: module '__main__' has no attribute 'aosdin'
 ----- tcl -> python interface -----}}
 
 # TODO: this error message could be improved ("has no method")
@@ -170,7 +170,7 @@ test types-1.4 {return null byte} {
 
 # See gotcha 1 for explanation of roundabout way of getting a unicode object.
 test types-1.5 {return unicode object} {
-	py eval {def a(): return '\xe0\xb2\xa0'.decode('utf-8')}
+	py eval {def a(): return b'\xe0\xb2\xa0'.decode('utf-8')}
 	expr {[py call a] == "ಠ"}
 } {1}
 
@@ -195,7 +195,7 @@ test types-1.7 {return nested lists and dictionaries} {
 test types-1.8 {return float} {
 	py eval {def a(): return 1.0/3}
 	py call a
-} {0.333333333333}
+} {0.3333333333333333}
 
 test types-1.9 {return large integer} {
 	py eval {def a(): return 3 << 5000}
@@ -207,13 +207,13 @@ test types-1.9 {return large integer} {
 # =========
 test modules-1.1 {hashlib module} {
 	py import hashlib
-	py eval {def a(): return hashlib.sha1('password').hexdigest()}
+	py eval {def a(): return hashlib.sha1('password'.encode('utf8')).hexdigest()}
 	py call a
 } {5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8}
 
 test modules-1.2 {zlib module} {
 	py import zlib
-	py eval {def a(): return zlib.decompress('x\x9cKLL\x04\x00\x02I\x01$')}
+	py eval {def a(): return zlib.decompress(b'x\x9cKLL\x04\x00\x02I\x01$')}
 	py call a
 } {aaa}
 
@@ -238,5 +238,3 @@ test module-1.4 {sqlite3 module} {
 # cleanup
 # =========
 ::tcltest::cleanupTests
-return
-

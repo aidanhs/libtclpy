@@ -16,6 +16,7 @@ static Tcl_Obj *
 pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 {
 	Tcl_Obj *tObj;
+	PyObject *pBytesObj;
 	PyObject *pStrObj;
 
 	Py_ssize_t i, len;
@@ -33,36 +34,37 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 	 * to be a string rather than a list. Suggested order below:
 	 * - None -> {}
 	 * - True -> 1, False -> 0
-	 * - string -> tcl byte string
+	 * - bytes -> tcl byte string
 	 * - unicode -> tcl unicode string
 	 * - number protocol -> tcl number
-	 * - mapping protocol -> tcl dict
 	 * - sequence protocol -> tcl list
+	 * - mapping protocol -> tcl dict
 	 * - other -> error (currently converts to string)
+	 *
+	 * Note that the sequence and mapping protocol are both determined by __getitem__,
+	 * the only difference is that dict subclasses are excluded from sequence.
 	 */
 
 	if (pObj == Py_None) {
 		tObj = Tcl_NewObj();
 	} else if (pObj == Py_True || pObj == Py_False) {
 		tObj = Tcl_NewBooleanObj(pObj == Py_True);
-	} else if (PyString_Check(pObj)) {
-		/* Strings are considered to be byte arrays */
+	} else if (PyBytes_Check(pObj)) {
 		tObj = Tcl_NewByteArrayObj(
-			(const unsigned char *)PyString_AS_STRING(pObj),
-			PyString_GET_SIZE(pObj)
+			(const unsigned char *)PyBytes_AS_STRING(pObj),
+			PyBytes_GET_SIZE(pObj)
 		);
 	} else if (PyUnicode_Check(pObj)) {
-		/* Unicode objects are interpreted as unicode strings */
-		pStrObj = PyUnicode_AsUTF8String(pObj);
-		if (pStrObj == NULL)
+		pBytesObj = PyUnicode_AsUTF8String(pObj);
+		if (pBytesObj == NULL)
 			return NULL;
 		tObj = Tcl_NewStringObj(
-			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
+			PyBytes_AS_STRING(pBytesObj), PyBytes_GET_SIZE(pBytesObj)
 		);
-		Py_DECREF(pStrObj);
+		Py_DECREF(pBytesObj);
 	} else if (PyNumber_Check(pObj)) {
 		/* We go via string to support arbitrary length numbers */
-		if (PyInt_Check(pObj) || PyLong_Check(pObj)) {
+		if (PyLong_Check(pObj)) {
 			pStrObj = PyNumber_ToBase(pObj, 10);
 		} else {
 			assert(PyComplex_Check(pObj) || PyFloat_Check(pObj));
@@ -70,8 +72,30 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 		}
 		if (pStrObj == NULL)
 			return NULL;
-		tObj = Tcl_NewStringObj(PyString_AS_STRING(pStrObj), -1);
+		pBytesObj = PyUnicode_AsUTF8String(pStrObj);
 		Py_DECREF(pStrObj);
+		if (pBytesObj == NULL)
+			return NULL;
+		tObj = Tcl_NewStringObj(
+			PyBytes_AS_STRING(pBytesObj), PyBytes_GET_SIZE(pBytesObj)
+		);
+		Py_DECREF(pBytesObj);
+	} else if (PySequence_Check(pObj)) {
+		tObj = Tcl_NewListObj(0, NULL);
+		len = PySequence_Length(pObj);
+		if (len == -1)
+			return NULL;
+
+		for (i = 0; i < len; i++) {
+			pVal = PySequence_GetItem(pObj, i);
+			if (pVal == NULL)
+				return NULL;
+			tVal = pyObjToTcl(interp, pVal);
+			Py_DECREF(pVal);
+			if (tVal == NULL)
+				return NULL;
+			Tcl_ListObjAppendElement(interp, tObj, tVal);
+		}
 	} else if (PyMapping_Check(pObj)) {
 		tObj = Tcl_NewDictObj();
 		len = PyMapping_Length(pObj);
@@ -103,31 +127,19 @@ pyObjToTcl(Tcl_Interp *interp, PyObject *pObj)
 			Py_XDECREF(pItem);
 			return NULL;
 		}
-	} else if (PySequence_Check(pObj)) {
-		tObj = Tcl_NewListObj(0, NULL);
-		len = PySequence_Length(pObj);
-		if (len == -1)
-			return NULL;
-
-		for (i = 0; i < len; i++) {
-			pVal = PySequence_GetItem(pObj, i);
-			if (pVal == NULL)
-				return NULL;
-			tVal = pyObjToTcl(interp, pVal);
-			Py_DECREF(pVal);
-			if (tVal == NULL)
-				return NULL;
-			Tcl_ListObjAppendElement(interp, tObj, tVal);
-		}
 	} else {
 		/* Get python string representation of other objects */
 		pStrObj = PyObject_Str(pObj);
 		if (pStrObj == NULL)
 			return NULL;
-		tObj = Tcl_NewStringObj(
-			PyString_AS_STRING(pStrObj), PyString_GET_SIZE(pStrObj)
-		);
+		pBytesObj = PyUnicode_AsUTF8String(pStrObj);
 		Py_DECREF(pStrObj);
+		if (pBytesObj == NULL)
+			return NULL;
+		tObj = Tcl_NewStringObj(
+			PyBytes_AS_STRING(pBytesObj), PyBytes_GET_SIZE(pBytesObj)
+		);
+		Py_DECREF(pBytesObj);
 	}
 
 	return tObj;
@@ -149,7 +161,7 @@ pyTraceAsStr(void)
 	// TODO: use extract_tb to get stack, print custom traceback myself
 
 	PyObject *pType = NULL, *pVal = NULL, *pTrace = NULL;
-	PyObject *pTraceList = NULL, *pTraceStr = NULL, *pTraceDesc = NULL;
+	PyObject *pTraceList = NULL, *pTraceStr = NULL, *pTraceDesc = NULL, *pTraceBytes = NULL;
 	PyObject *pNone = NULL, *pEmptyStr = NULL;
 	char *traceStr = NULL;
 	Py_ssize_t traceLen = 0;
@@ -190,7 +202,7 @@ pyTraceAsStr(void)
 	Py_XDECREF(pTraceDesc);
 
 	/* Turn the python list into a python string */
-	pEmptyStr = PyString_FromString("");
+	pEmptyStr = PyUnicode_FromString("");
 	if (pEmptyStr == NULL) {
 		Py_DECREF(pTraceList);
 		return strdup("[Failed to get python exception details (#e_ltp04)]\n");
@@ -202,8 +214,12 @@ pyTraceAsStr(void)
 		return strdup("[Failed to get python exception details (#e_ltp05)]\n");
 
 	/* Turn the python string into a string */
-	traceStr = strdup(PyString_AS_STRING(pTraceStr));
+	pTraceBytes = PyUnicode_AsASCIIString(pTraceStr);
 	Py_DECREF(pTraceStr);
+	if (pTraceBytes == NULL)
+		return strdup("[Failed to convert python exception details to ascii bytes (#e_ltp06)]\n");
+	traceStr = strdup(PyBytes_AS_STRING(pTraceBytes));
+	Py_DECREF(pTraceBytes);
 
 	return traceStr;
 }
@@ -237,7 +253,7 @@ PyCall_Cmd(
 	while (dot != NULL) {
 		pObjParent = pObj;
 
-		pObjStr = PyString_FromStringAndSize(objandfn, dot-objandfn);
+		pObjStr = PyUnicode_FromStringAndSize(objandfn, dot-objandfn);
 		if (pObjStr == NULL) {
 			Py_DECREF(pObjParent);
 			return PY_ERROR;
@@ -267,7 +283,7 @@ PyCall_Cmd(
 	PyObject *pArgs = PyTuple_New(objc-3);
 	PyObject* curarg = NULL;
 	for (i = 0; i < objc-3; i++) {
-		curarg = PyString_FromString(Tcl_GetString(objv[i+3]));
+		curarg = PyUnicode_FromString(Tcl_GetString(objv[i+3]));
 		if (curarg == NULL) {
 			Py_DECREF(pArgs);
 			Py_DECREF(pFn);
@@ -322,7 +338,7 @@ PyImport_Cmd(
 	Tcl_Obj *const objv[]   /* Argument strings */
 	)
 {
-	char *modname, *topmodname;
+	const char *modname, *topmodname;
 	PyObject *pMainModule, *pTopModule;
 	int ret = -1;
 
@@ -338,6 +354,7 @@ PyImport_Cmd(
 	if (pMainModule == NULL)
 		return PY_ERROR;
 
+	// We don't use PyImport_ImportModule so mod.submod works
 	pTopModule = PyImport_ImportModuleEx(modname, NULL, NULL, NULL);
 	if (pTopModule == NULL)
 		return PY_ERROR;
@@ -390,12 +407,15 @@ Py_Cmd(
 		ret = TCL_ERROR;
 		// Not entirely sure if this is the correct way of doing things. Should
 		// I be calling Tcl_AddErrorInfo instead?
-		char *traceStr = pyTraceAsStr();
+		char *traceStr = pyTraceAsStr(); // clears exception
+		if (traceStr == NULL) {
+			// TODO: something went wrong in traceback
+			PyErr_Clear();
+			return TCL_ERROR;
+		}
 		Tcl_AppendResult(interp, traceStr, NULL);
 		Tcl_AppendResult(interp, "----- tcl -> python interface -----", NULL);
 		free(traceStr);
-		/* In case there was an exception in the traceback printer */
-		PyErr_Clear();
 	}
 
 	return ret;
@@ -412,18 +432,7 @@ tclpy_eval(PyObject *self, PyObject *args, PyObject *kwargs)
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &tclCode))
 		return NULL;
 
-#ifdef Py_CAPSULE_H
 	Tcl_Interp *interp = PyCapsule_Import("tclpy.interp", 0);
-#else
-	PyObject *pyMod = PyImport_AddModule("tclpy");
-	if (pyMod == NULL)
-		return NULL;
-	PyObject *pyTclInterp = PyObject_GetAttrString(pyMod, "interp");
-	if (pyTclInterp == NULL)
-		return NULL;
-	Tcl_Interp *interp = PyCObject_AsVoidPtr(pyTclInterp);
-	Py_DECREF(pyTclInterp);
-#endif
 
 	int result = Tcl_Eval(interp, tclCode);
 	Tcl_Obj *tResult = Tcl_GetObjResult(interp);
@@ -442,8 +451,21 @@ tclpy_eval(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyMethodDef TclPyMethods[] = {
 	{"eval",  (PyCFunction)tclpy_eval,
 		METH_VARARGS | METH_KEYWORDS,
-		"Set the converter for a type of literal value."},
+		"Evaluate some tcl code"},
 	{NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+// TODO: there should probably be some tcl deinit in the clear/free code
+static struct PyModuleDef TclPyModule = {
+	PyModuleDef_HEAD_INIT,
+	"tclpy",
+	"A module to permit interop with Tcl",
+	-1,
+	TclPyMethods,
+	NULL, // m_slots
+	NULL, // m_traverse
+	NULL, // m_clear
+	NULL, // m_free
 };
 
 /* SHARED INITIALISATION BEGINS HERE */
@@ -457,7 +479,7 @@ typedef enum {
 static ParentInterp parentInterp = NO_PARENT;
 
 int Tclpy_Init(Tcl_Interp *interp);
-int init_python_tclpy(Tcl_Interp* interp);
+PyObject *init_python_tclpy(Tcl_Interp* interp);
 
 int
 Tclpy_Init(Tcl_Interp *interp)
@@ -487,14 +509,14 @@ Tclpy_Init(Tcl_Interp *interp)
 
 	if (parentInterp != PY_PARENT) {
 		Py_Initialize(); /* void */
-		if (init_python_tclpy(interp) == -1)
+		if (init_python_tclpy(interp) == NULL)
 			return TCL_ERROR;
 	}
 
 	/* Get support for full tracebacks */
 	PyObject *pTraceModStr, *pTraceMod;
 
-	pTraceModStr = PyString_FromString("traceback");
+	pTraceModStr = PyUnicode_FromString("traceback");
 	if (pTraceModStr == NULL)
 		return TCL_ERROR;
 	pTraceMod = PyImport_Import(pTraceModStr);
@@ -515,11 +537,11 @@ Tclpy_Init(Tcl_Interp *interp)
 	return TCL_OK;
 }
 
-int
+PyObject *
 init_python_tclpy(Tcl_Interp* interp)
 {
 	if (parentInterp == PY_PARENT)
-		return -1;
+		return NULL;
 	if (parentInterp == NO_PARENT)
 		parentInterp = PY_PARENT;
 	if (parentInterp == TCL_PARENT)
@@ -528,29 +550,23 @@ init_python_tclpy(Tcl_Interp* interp)
 	if (interp == NULL)
 		interp = Tcl_CreateInterp();
 	if (Tcl_Init(interp) != TCL_OK)
-		return -1;
+		return NULL;
 	if (parentInterp == PY_PARENT && Tclpy_Init(interp) == TCL_ERROR)
-		return -1;
+		return NULL;
 
-	PyObject *m = Py_InitModule("tclpy", TclPyMethods);
+	PyObject *m = PyModule_Create(&TclPyModule);
 	if (m == NULL)
-		return -1;
-#ifdef Py_CAPSULE_H
+		return NULL;
 	PyObject *pCap = PyCapsule_New(interp, "tclpy.interp", NULL);
-#else
-	PyObject *pCap = PyCObject_FromVoidPtrAndDesc(interp, (void *)"tclpy.interp", NULL);
-#endif
 	if (PyObject_SetAttrString(m, "interp", pCap) == -1)
-		return -1;
+		return NULL;
 	Py_DECREF(pCap);
 
-	return 0;
+	return m;
 }
 
 PyMODINIT_FUNC
 inittclpy(void)
 {
-	if (init_python_tclpy(NULL) == -1)
-		return;
-	return;
+	return init_python_tclpy(NULL);
 }

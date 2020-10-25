@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 0.3
+PACKAGE_VERSION = 0.4
 
 DFLAGS = -DPACKAGE_VERSION='"$(PACKAGE_VERSION)"'
 
@@ -32,9 +32,9 @@ CFLAGS = \
 
 TCL_STUBS ?= 1
 TCLCONFIG ?= $(shell \
-	(X=/usr/lib/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
+	(X=/usr/lib/tcl8.6/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
 	(X=/usr/lib64/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
-	(X=/usr/lib/tcl8.5/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
+	(X=/usr/lib/tclConfig.sh; test -f $$X && echo $$X || exit 1) || \
 	echo "" \
 )
 TCLCONFIG_TEST = test -f "$(TCLCONFIG)" || (echo "Couldn't find tclConfig.sh" && exit 1)
@@ -47,10 +47,10 @@ TCL_LIB     = $(shell . "$(TCLCONFIG)"; \
 	fi \
 )
 TCL_INCLUDE = $(shell . "$(TCLCONFIG)"; echo $$TCL_INCLUDE_SPEC)
-PY_LIB      = $(shell python-config --libs)
-PY_INCLUDE  = $(shell python-config --includes)
+PY_LIB      = $(shell python3-config --libs)
+PY_INCLUDE  = $(shell python3-config --includes)
 
-PY_LIBFILE  = $(shell python -c 'import distutils.sysconfig; print distutils.sysconfig.get_config_var("LDLIBRARY")')
+PY_LIBFILE  = $(shell python3 -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("LDLIBRARY"))')
 CFLAGS += -DPY_LIBFILE='"$(PY_LIBFILE)"'
 
 default: libtclpy$(PACKAGE_VERSION).so
